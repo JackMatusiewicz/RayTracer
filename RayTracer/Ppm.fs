@@ -9,6 +9,13 @@ type Colour =
         B : uint8
     }
 
+type Vec =
+    {
+        X : int
+        Y : int
+        Z : int
+    }
+
 [<RequireQualifiedAccess>]
 module Colour =
 
