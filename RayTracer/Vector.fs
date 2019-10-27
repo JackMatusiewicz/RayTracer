@@ -50,6 +50,9 @@ module Vector =
             Z = x.Z * s
         }
 
+    let dot (x : Vector) (y : Vector) =
+        x.X * y.X + x.Y * y.Y + x.Z * y.Z
+
     let scalarDivide (s : float) (x : Vector) =
         {
             X = x.X / s
