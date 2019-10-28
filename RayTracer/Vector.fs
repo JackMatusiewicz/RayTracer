@@ -2,6 +2,7 @@ namespace RayTracer
 
 open System
 
+[<Struct>]
 type Vector =
     {
         X : float

@@ -2,6 +2,7 @@ namespace RayTracer
 
 open System.Text
 
+[<Struct>]
 type Colour =
     {
         R : uint8
