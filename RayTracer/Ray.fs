@@ -1,5 +1,6 @@
 namespace RayTracer
 
+[<Struct>]
 type Ray =
     {
         Position : Vector

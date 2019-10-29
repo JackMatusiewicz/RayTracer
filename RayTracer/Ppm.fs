@@ -3,6 +3,7 @@ namespace RayTracer
 open System.Text
 open System.IO
 
+[<Struct>]
 type Colour =
     {
         R : uint8
