@@ -14,25 +14,35 @@ type Shape =
 [<RequireQualifiedAccess>]
 module Shape =
 
-    let sphereCollides (s:Sphere) (r : Ray) : bool =
+    let sphereCollides (s:Sphere) (r : Ray) : float =
         let aV = r.Position
         let bV = UnitVector.toVector r.Direction
         let cV = s.Center
-        let aMinusC = Vector.sub aV cV
+        let aMinusC = Vector.sub cV aV
 
         let a = Vector.dot bV bV
         let b =
-            Vector.dot bV aMinusC
+            Vector.dot aMinusC bV
             |> fun v -> v * 2.
         let c =
             Vector.dot aMinusC aMinusC
             |> fun v -> v - (s.Radius * s.Radius)
-        b * b - 4. * a * c > 0.
+        let discriminant = b * b - 4. * a * c
+        if discriminant < 0. then
+            -1.
+        else
+            (-b - Math.Sqrt discriminant) / (2. * a)
 
     let hackySphere = { Center = { X = 0.; Y = 0.; Z = -1. }; Radius = 0.5 }
     let hackySphereScene (r : Ray) : Colour =
-        if sphereCollides hackySphere r then
-            { R = 255uy; G = 0uy; B = 0uy }
+        let v = sphereCollides hackySphere r
+        if v > 0. then
+            Ray.getPosition v r
+            |> Vector.sub hackySphere.Center
+            |> Vector.unitVector
+            |> UnitVector.toVector
+            |> (fun {X=x;Y=y;Z=z} -> { X = x+1.; Y = y+1.; Z = z+1. })
+            |> Vector.scalarMultiply 0.5
         else
             let dir = UnitVector.toVector r.Direction
             let t = 0.5 * (dir.Y + 1.)
@@ -42,8 +52,8 @@ module Shape =
             let b =
                 {X = 0.5; Y = 0.7; Z = 1.}
                 |> Vector.scalarMultiply t
-            let r =
-                Vector.add a b
+            Vector.add a b
+        |> fun r ->
             {
                 R = r.X * 255.99 |> uint8
                 G = r.Y * 255.99 |> uint8
