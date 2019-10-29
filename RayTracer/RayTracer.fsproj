@@ -9,6 +9,7 @@
         <Compile Include="Ppm.fs" />
         <Compile Include="Vector.fs" />
         <Compile Include="Ray.fs" />
+        <Compile Include="Shape.fs" />
         <Compile Include="Program.fs" />
     </ItemGroup>
 
