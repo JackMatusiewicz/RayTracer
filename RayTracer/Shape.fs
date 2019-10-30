@@ -2,6 +2,27 @@ namespace RayTracer
 open System
 
 [<Struct>]
+type HitRecord =
+    {
+        T : float
+        CollisionPoint : Vector
+        Normal : UnitVector
+    }
+
+[<Struct>]
+type ParameterRange =
+    {
+        Min : float
+        Max: float
+    }
+
+[<RequireQualifiedAccess>]
+module ParameterRange =
+
+    let inRange (pr : ParameterRange) (v : float) =
+        v >= pr.Min && v <= pr.Max
+
+[<Struct>]
 type Sphere =
     internal {
         Center : Vector
@@ -14,7 +35,24 @@ type Shape =
 [<RequireQualifiedAccess>]
 module Shape =
 
-    let sphereCollides (s:Sphere) (r : Ray) : float =
+    let sphereCollides
+        (range : ParameterRange)
+        (s : Sphere)
+        (r : Ray)
+        : HitRecord option
+        =
+        let tryCreateHitRecord v =
+            if ParameterRange.inRange range v then
+                let p = Ray.getPosition v r
+                {
+                    T = v
+                    CollisionPoint = p
+                    Normal =
+                        Vector.sub s.Center p
+                        |> Vector.scalarDivide s.Radius
+                        |> Vector.unitVector
+                } |> Some
+            else None
         let aV = r.Position
         let bV = UnitVector.toVector r.Direction
         let cV = s.Center
@@ -29,34 +67,9 @@ module Shape =
             |> fun v -> v - (s.Radius * s.Radius)
         let discriminant = b * b - 4. * a * c
         if discriminant < 0. then
-            -1.
+            None
         else
-            (-b - Math.Sqrt discriminant) / (2. * a)
-
-    let hackySphere = { Center = { X = 0.; Y = 0.; Z = -1. }; Radius = 0.5 }
-    let hackySphereScene (r : Ray) : Colour =
-        let v = sphereCollides hackySphere r
-        if v > 0. then
-            Ray.getPosition v r
-            |> Vector.sub hackySphere.Center
-            |> Vector.unitVector
-            |> UnitVector.toVector
-            |> (fun {X=x;Y=y;Z=z} -> { X = x+1.; Y = y+1.; Z = z+1. })
-            |> Vector.scalarMultiply 0.5
-        else
-            let dir = UnitVector.toVector r.Direction
-            let t = 0.5 * (dir.Y + 1.)
-            let a =
-                {X = 1.; Y = 1.; Z = 1.}
-                |> Vector.scalarMultiply (1. - t)
-            let b =
-                {X = 0.5; Y = 0.7; Z = 1.}
-                |> Vector.scalarMultiply t
-            Vector.add a b
-        |> fun r ->
-            {
-                R = r.X * 255.99 |> uint8
-                G = r.Y * 255.99 |> uint8
-                B = r.Z * 255.99 |> uint8
-            }
-
+            let v = (-b - Math.Sqrt discriminant) / (2. * a)
+            let v' = (-b + Math.Sqrt discriminant) / (2. * a)
+            tryCreateHitRecord v
+            |> Option.orElse (tryCreateHitRecord v')
