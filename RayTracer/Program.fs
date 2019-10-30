@@ -29,9 +29,7 @@ let rayCollides (shapes : Shape list) (r : Ray) : Colour =
         let v =
             List.sortBy (fun hr -> hr.T) vs
             |> List.head
-        Ray.getPosition v.T r
-        |> Vector.sub hackySphere.Center
-        |> Vector.unitVector
+        v.Normal
         |> UnitVector.toVector
         |> (fun {X=x;Y=y;Z=z} -> { X = x+1.; Y = y+1.; Z = z+1. })
         |> Vector.scalarMultiply 0.5
