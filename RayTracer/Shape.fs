@@ -37,8 +37,8 @@ module Shape =
 
     let sphereCollides
         (range : ParameterRange)
-        (s : Sphere)
         (r : Ray)
+        (s : Sphere)
         : HitRecord option
         =
         let tryCreateHitRecord v =
@@ -73,3 +73,8 @@ module Shape =
             let v' = (-b + Math.Sqrt discriminant) / (2. * a)
             tryCreateHitRecord v
             |> Option.orElse (tryCreateHitRecord v')
+
+    let collides (pr : ParameterRange) (r : Ray) (s : Shape) =
+        match s with
+        | Sphere s ->
+            sphereCollides pr r s
