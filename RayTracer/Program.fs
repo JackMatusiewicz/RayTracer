@@ -23,15 +23,7 @@ let rayCollides (shapes : Shape list) (r : Ray) : Colour =
         |> List.choose id
     match collisionPoints with
     | [] ->
-        let dir = UnitVector.toVector r.Direction
-        let t = 0.5 * (dir.Y + 1.)
-        let a =
-            {X = 1.; Y = 1.; Z = 1.}
-            |> Vector.scalarMultiply (1. - t)
-        let b =
-            {X = 0.5; Y = 0.7; Z = 1.}
-            |> Vector.scalarMultiply t
-        Vector.add a b
+        { X = 0.; Y = 0.; Z = 0.}
     | vs ->
         let v =
             List.sortBy (fun hr -> hr.T) vs
