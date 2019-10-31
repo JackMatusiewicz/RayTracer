@@ -3,6 +3,13 @@
 open System
 open RayTracer
 
+type ViewPlane =
+    {
+        LowerLeftCorner : Vector
+        Horizontal : Vector
+        Vertical : Vector
+    }
+
 let hackySphere = { Center = { X = 0.; Y = 0.; Z = -1. }; Radius = 0.5 }
 let shapes =
     [
@@ -43,9 +50,12 @@ let rayCollides (shapes : Shape list) (r : Ray) : Colour =
 let hackyScene () =
     let x = 1920.
     let y = 1080.
-    let llc = { X = -2.; Y = -1.; Z = -1. }
-    let hori = { X = 4.; Y = 0.; Z = 0. }
-    let vert = { X = 0.; Y = 2.; Z = 0. }
+    let viewPlane =
+        {
+            LowerLeftCorner = { X = -2.; Y = -1.; Z = -1. }
+            Horizontal = { X = 4.; Y = 0.; Z = 0. }
+            Vertical = { X = 0.; Y = 2.; Z = 0. }
+        }
     let origin = { X = 0.; Y = 0.; Z = 0. }
     let rays =
         Array2D.init
@@ -56,10 +66,10 @@ let hackyScene () =
                 let u = (float u) / x
                 let v = (float v) / y
                 let direction =
-                    let a = Vector.scalarMultiply u hori
-                    let b = Vector.scalarMultiply v vert
+                    let a = Vector.scalarMultiply u viewPlane.Horizontal
+                    let b = Vector.scalarMultiply v viewPlane.Vertical
                     Vector.add a b
-                    |> Vector.add llc
+                    |> Vector.add viewPlane.LowerLeftCorner
                     |> Vector.unitVector
                 { Position = origin; Direction = direction }
             )
