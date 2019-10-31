@@ -61,8 +61,12 @@ module Vector =
             Z = x.Z / s
         }
 
+    let squaredLength (x : Vector) =
+        x.X * x.X + x.Y * x.Y + x.Z * x.Z
+
     let length (x : Vector) =
-        Math.Sqrt (x.X * x.X + x.Y * x.Y + x.Z * x.Z)
+        squaredLength x
+        |> Math.Sqrt
 
     let unitVector (x : Vector) : UnitVector =
         let len = length x
