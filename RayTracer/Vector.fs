@@ -8,7 +8,29 @@ type Vector =
         X : float
         Y : float
         Z : float
-    }
+    } with
+
+    static member (+) (lhs : Vector, rhs : Vector) : Vector =
+        {
+            X = lhs.X + rhs.X
+            Y = lhs.Y + rhs.Y
+            Z = lhs.Z + rhs.Z
+        }
+
+    static member (-) (lhs : Vector, rhs : Vector) : Vector =
+        {
+            X = lhs.X - rhs.X
+            Y = lhs.Y - rhs.Y
+            Z = lhs.Z - rhs.Z            
+        }
+
+    static member (*) (a : Vector, b : Vector) =
+        {
+            X = a.X * b.X
+            Y = a.Y * b.Y
+            Z = a.Z * b.Z
+        }
+
 
 [<Struct>]
 type UnitVector = private UnitVector of Vector
@@ -16,26 +38,11 @@ type UnitVector = private UnitVector of Vector
 [<RequireQualifiedAccess>]
 module Vector =
 
-    let add (x : Vector) (y : Vector) =
-        {
-            X = x.X + y.X
-            Y = x.Y + y.Y
-            Z = x.Z + y.Z
-        }
+    let add (x : Vector) (y : Vector) = x + y
 
-    let sub (rhs : Vector) (lhs : Vector) =
-        {
-            X = lhs.X - rhs.X
-            Y = lhs.Y - rhs.Y
-            Z = lhs.Z - rhs.Z
-        }
+    let sub (rhs : Vector) (lhs : Vector) = lhs - rhs
 
-    let multiply (x : Vector) (y : Vector) =
-        {
-            X = x.X * y.X
-            Y = x.Y * y.Y
-            Z = x.Z * y.Z
-        }
+    let multiply (x : Vector) (y : Vector) = x * y
 
     let divide (denominator : Vector) (numerator : Vector) =
         {
