@@ -2,13 +2,13 @@
 
 open System
 open RayTracer
-open System.Diagnostics
 
-type ViewPlane =
+type PinholeCamera =
     {
         LowerLeftCorner : Vector
         Horizontal : Vector
         Vertical : Vector
+        Origin : Vector
     }
 
 let hackySphere = { Center = { X = 0.; Y = 0.; Z = -1. }; Radius = 0.5 }
@@ -39,7 +39,7 @@ let rec multiCont (xs : ((('a -> 'k) -> 'k) list)) (f : 'a list -> 'k) : 'k =
 // Deals with the path of a single ray.
 let rec rayCollides' (ran : Random) (shapes : Shape list) (r : Ray) (kont : Colour -> 'k) : 'k =
     let collisionPoints =
-        List.map (Shape.collides { Min = 0.001; Max = Double.MaxValue } r) shapes
+        List.map (Shape.collides { Min = 0.001 } r) shapes
         |> List.choose id
     match collisionPoints with
     | [] ->
@@ -83,8 +83,8 @@ let hackyScene () =
             LowerLeftCorner = { X = -2.; Y = -1.; Z = -1. }
             Horizontal = { X = 4.; Y = 0.; Z = 0. }
             Vertical = { X = 0.; Y = 2.; Z = 0. }
+            Origin = { X = 0.; Y = 0.;  Z = 0. }
         }
-    let origin = { X = 0.; Y = 0.; Z = 0. }
     let rays =
         Array2D.init
             (int y)
@@ -100,8 +100,9 @@ let hackyScene () =
                             let b = Vector.scalarMultiply v viewPlane.Vertical
                             Vector.add a b
                             |> Vector.add viewPlane.LowerLeftCorner
+                            |> Vector.sub viewPlane.Origin
                             |> Vector.unitVector
-                        { Position = origin; Direction = direction })
+                        { Position = viewPlane.Origin; Direction = direction })
             )
     Array2D.map (rayCollides r shapes) rays
     |> Ppm.toPpm

@@ -13,14 +13,13 @@ type HitRecord =
 type ParameterRange =
     {
         Min : float
-        Max: float
     }
 
 [<RequireQualifiedAccess>]
 module ParameterRange =
 
     let inRange (pr : ParameterRange) (v : float) =
-        v >= pr.Min && v <= pr.Max
+        v >= pr.Min
 
 [<Struct>]
 type Sphere =
