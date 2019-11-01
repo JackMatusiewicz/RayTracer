@@ -19,12 +19,8 @@ let shapes =
     ]
 
 let rec randomPointInUnitSphere (r : Random) : Vector =
-    let p =
-        {
-            X = r.NextDouble ()
-            Y = r.NextDouble ()
-            Z = r.NextDouble ()
-        }
+    let p : Vector =
+        Vector.make (r.NextDouble ()) (r.NextDouble ()) (r.NextDouble ())
         |> Vector.scalarMultiply 2.
         |> Vector.sub { X = 1.; Y = 1.; Z = 1. }
     if Vector.squaredLength p < 1. then p

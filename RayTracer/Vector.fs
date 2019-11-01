@@ -24,7 +24,7 @@ type Vector =
             Z = lhs.Z - rhs.Z            
         }
 
-    static member (*) (a : Vector, b : Vector) =
+    static member (*) (a : Vector, b : Vector) : Vector =
         {
             X = a.X * b.X
             Y = a.Y * b.Y
@@ -37,6 +37,11 @@ type UnitVector = private UnitVector of Vector
 
 [<RequireQualifiedAccess>]
 module Vector =
+
+    let make x y z =
+        {
+            X = x; Y = y; Z = z
+        }
 
     let add (x : Vector) (y : Vector) = x + y
 
