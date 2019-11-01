@@ -6,8 +6,9 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Compile Include="Ppm.fs" />
+        <Compile Include="Colour.fs" />
         <Compile Include="Vector.fs" />
+        <Compile Include="Ppm.fs" />
         <Compile Include="Ray.fs" />
         <Compile Include="Shape.fs" />
         <Compile Include="Program.fs" />
