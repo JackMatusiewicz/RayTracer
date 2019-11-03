@@ -28,8 +28,15 @@ type Sphere =
         Radius : float
     }
 
+type Plane =
+    internal {
+        Point : Point
+        Normal : UnitVector
+    }
+
 type Shape =
     | Sphere of Sphere
+    | Plane of Plane
 
 [<RequireQualifiedAccess>]
 module Shape =
@@ -74,7 +81,21 @@ module Shape =
             tryCreateHitRecord v
             |> Option.orElse (tryCreateHitRecord v')
 
+    let planeCollides (p : Plane) (pr : ParameterRange) (r : Ray) =
+        let rp = { Point.X =r.Position.X; Y = r.Position.Y; Z = r.Position.Z }
+        let t = Vector.dot (p.Point - rp) (UnitVector.toVector p.Normal) / (Vector.dot (UnitVector.toVector r.Direction) (UnitVector.toVector p.Normal))
+        if ParameterRange.inRange pr t then
+            let pt = Ray.getPosition t r
+            {
+                T = t
+                CollisionPoint = pt
+                Normal = p.Normal
+            } |> Some
+        else None
+
     let collides (pr : ParameterRange) (r : Ray) (s : Shape) =
         match s with
         | Sphere s ->
             sphereCollides pr r s
+        | Plane p ->
+            planeCollides p pr r

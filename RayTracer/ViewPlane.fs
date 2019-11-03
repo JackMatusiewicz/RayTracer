@@ -41,6 +41,7 @@ module Pinhole =
         let w =
             UnitVector.toVector direction
             |> Vector.scalarMultiply -1.
+            
         let u =
             UnitVector.toVector up
             |> fun up -> Vector.cross up w
@@ -78,8 +79,10 @@ module Pinhole =
         let w =
             UnitVector.toVector pinhole.Onb.W
             |> Vector.scalarMultiply pinhole.CameraDistance
-        u + v - w
-        |> Vector.unitVector
+        let ret =
+            u + v - w
+            |> Vector.unitVector
+        ret
 
     let getRays (pinhole : Pinhole) : Ray[,] =
         Array2D.init
@@ -88,6 +91,7 @@ module Pinhole =
             (fun r c ->
                 let r = pinhole.ViewPlane.VerticalResolution - r - 1
                 let x,y = ViewPlane.getXY r c pinhole.ViewPlane
+                //let rayOrigin = { Vector.X = x; Y = y; Z = pinhole.CameraLocation.Z }
                 let dir = getRayDirection x y pinhole
                 let vv = { Vector.X = pinhole.CameraLocation.X; Vector.Y = pinhole.CameraLocation.Y; Vector.Z = pinhole.CameraLocation.Z }
                 { Position = vv; Direction = dir })

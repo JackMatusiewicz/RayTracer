@@ -3,11 +3,11 @@
 open System
 open RayTracer
 
-let hackySphere = { Center = { X = 0.; Y = 0.; Z = -1. }; Radius = 0.5 }
 let shapes =
     [
-        Sphere { Center = { X = 0.; Y = 0.; Z = -1. }; Radius = 0.5 }
-        Sphere { Center = { X = 0.; Y = -100.5; Z = -1. }; Radius = 100. }
+        Sphere { Center = { X = 0.; Y = 0.; Z = 0. }; Radius = 200. }
+        Plane { Point = {X = 0.; Y = 0.; Z = 0.}; Normal = {Vector.X = 0.; Y = 1.; Z = 0.} |> Vector.unitVector }
+        //Sphere { Center = { X = 0.; Y = -100.5; Z = -1. }; Radius = 100. }
     ]
 
 let rec randomPointInUnitSphere (r : Random) : Vector =
@@ -70,8 +70,8 @@ let hackyScene () =
                 VerticalResolution = 1080
                 PixelSize = 1.
             }
-            { Point.X = 0.; Y = 0.; Z = -10. }
-            1.
+            { Point.X = 0.; Y = 0.; Z = -2000. }
+            10.
             ({ Vector.X = 0.; Y = 1.; Z = 0. } |> Vector.unitVector)
             ({ Vector.X = 0.; Y = 0.; Z = 1. } |> Vector.unitVector)
     
