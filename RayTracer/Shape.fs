@@ -52,6 +52,7 @@ module Shape =
                         |> Vector.unitVector
                 } |> Some
             else None
+
         let aV = r.Position
         let bV = UnitVector.toVector r.Direction
         let cV = s.Center

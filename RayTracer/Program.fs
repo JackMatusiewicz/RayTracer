@@ -3,14 +3,6 @@
 open System
 open RayTracer
 
-type PinholeCamera =
-    {
-        LowerLeftCorner : Vector
-        Horizontal : Vector
-        Vertical : Vector
-        Origin : Vector
-    }
-
 let hackySphere = { Center = { X = 0.; Y = 0.; Z = -1. }; Radius = 0.5 }
 let shapes =
     [
@@ -71,36 +63,20 @@ let rec rayCollides (ran : Random) (shapes : Shape list) (r : Ray list) : Colour
 
 let hackyScene () =
     let r = System.Random ()
-    let x = 1920.
-    let y = 1080.
-    let antialiasingCount = 2
-    let viewPlane =
-        {
-            LowerLeftCorner = { X = -2.; Y = -1.; Z = -1. }
-            Horizontal = { X = 4.; Y = 0.; Z = 0. }
-            Vertical = { X = 0.; Y = 2.; Z = 0. }
-            Origin = { X = 0.; Y = 0.;  Z = 0. }
-        }
-    let rays =
-        Array2D.init
-            (int y)
-            (int x)
-            (fun v u ->
-                List.init antialiasingCount
-                    (fun _ ->
-                        let v = (int y) - v - 1
-                        let u = (float u + r.NextDouble ()) / x
-                        let v = (float v + r.NextDouble ()) / y
-                        let direction =
-                            let a = Vector.scalarMultiply u viewPlane.Horizontal
-                            let b = Vector.scalarMultiply v viewPlane.Vertical
-                            Vector.add a b
-                            |> Vector.add viewPlane.LowerLeftCorner
-                            |> Vector.sub viewPlane.Origin
-                            |> Vector.unitVector
-                        { Position = viewPlane.Origin; Direction = direction })
-            )
-    Array2D.map (rayCollides r shapes) rays
+    let pinhole =
+        Pinhole.make
+            {
+                HorizontalResolution = 1920
+                VerticalResolution = 1080
+                PixelSize = 1.
+            }
+            { Point.X = 0.; Y = 0.; Z = -10. }
+            1.
+            ({ Vector.X = 0.; Y = 1.; Z = 0. } |> Vector.unitVector)
+            ({ Vector.X = 0.; Y = 0.; Z = 1. } |> Vector.unitVector)
+    
+    Pinhole.getRays pinhole
+    |> Array2D.map (List.singleton >> rayCollides r shapes)
     |> Ppm.toPpm
     |> Ppm.toDisk "testImage"
 
