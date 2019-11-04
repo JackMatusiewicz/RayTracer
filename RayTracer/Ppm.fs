@@ -25,5 +25,5 @@ module Ppm =
         |> Ppm
 
     let toDisk (fileName : string) (Ppm data) : unit =
-        File.WriteAllText (fileName, data)
+        File.WriteAllText (fileName + ".ppm", data)
     
