@@ -23,6 +23,13 @@ module Point =
             X = x; Y = y; Z = z
         }
 
+    let add (v : Vector) (p : Point) : Point =
+        {
+            Point.X = p.X + v.X
+            Y = p.Y + v.Y
+            Z = p.Z + v.Z
+        }
+
     let scalarAdd (v : float) (p : Point) : Point =
         {
             X = p.X + v

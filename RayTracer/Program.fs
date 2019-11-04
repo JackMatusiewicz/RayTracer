@@ -6,8 +6,8 @@ open RayTracer
 let shapes =
     [
         Sphere { Center = { X = 0.; Y = 0.; Z = 0. }; Radius = 200. }
-        Plane { Point = {X = 0.; Y = 0.; Z = 0.}; Normal = {Vector.X = 0.; Y = 1.; Z = 0.} |> Vector.unitVector }
-        //Sphere { Center = { X = 0.; Y = -100.5; Z = -1. }; Radius = 100. }
+        Sphere { Center = { X = 0.; Y = 0.; Z = -300. }; Radius = 300. }
+        Sphere { Center = { X = 0.; Y = 0.; Z = -600. }; Radius = 400. }
     ]
 
 let rec randomPointInUnitSphere (r : Random) : Vector =
@@ -32,9 +32,9 @@ let rec rayCollides' (ran : Random) (shapes : Shape list) (r : Ray) (kont : Colo
     match collisionPoints with
     | [] ->
         {
-            R = 255uy
-            G = 255uy
-            B = 255uy
+            R = 0uy
+            G = 0uy
+            B = 0uy
         }
         |> kont
     | vs ->
@@ -43,15 +43,17 @@ let rec rayCollides' (ran : Random) (shapes : Shape list) (r : Ray) (kont : Colo
             |> List.head
         v.Normal
         |> UnitVector.toVector
-        |> Vector.add v.CollisionPoint
-        |> Vector.add (randomPointInUnitSphere ran)
-        |> fun vec ->
+        |> fun norm -> Point.add norm v.CollisionPoint
+        |> fun pt -> Point.add (randomPointInUnitSphere ran) pt
+        |> fun pt ->
             rayCollides'
                 ran
                 shapes
                 {
                     Position = v.CollisionPoint
-                    Direction = Vector.sub v.CollisionPoint vec |> Vector.unitVector
+                    Direction =
+                        pt - v.CollisionPoint 
+                        |> Vector.unitVector
                 }
                 (fun c -> Colour.scalarMultiply 0.5 c |> kont)
 
@@ -71,7 +73,7 @@ let hackyScene () =
                 PixelSize = 1.
             }
             { Point.X = 0.; Y = 0.; Z = -2000. }
-            10.
+            500.
             ({ Vector.X = 0.; Y = 1.; Z = 0. } |> Vector.unitVector)
             ({ Vector.X = 0.; Y = 0.; Z = 1. } |> Vector.unitVector)
     

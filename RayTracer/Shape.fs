@@ -5,7 +5,7 @@ open System
 type HitRecord =
     {
         T : float
-        CollisionPoint : Vector
+        CollisionPoint : Point
         Normal : UnitVector
     }
 
@@ -24,7 +24,7 @@ module ParameterRange =
 [<Struct>]
 type Sphere =
     internal {
-        Center : Vector
+        Center : Point
         Radius : float
     }
 
@@ -38,14 +38,19 @@ type Shape =
     | Sphere of Sphere
     | Plane of Plane
 
-[<RequireQualifiedAccess>]
-module Shape =
+type SceneObject =
+    {
+        Shape : Shape
+        Colour : Colour
+    }
 
-    let sphereCollides
+[<RequireQualifiedAccess>]
+module internal Sphere =
+
+    let rayIntersects
         (range : ParameterRange)
         (r : Ray)
         (s : Sphere)
-        : HitRecord option
         =
         let tryCreateHitRecord v =
             if ParameterRange.inRange range v then
@@ -54,7 +59,7 @@ module Shape =
                     T = v
                     CollisionPoint = p
                     Normal =
-                        Vector.sub s.Center p
+                        p - s.Center
                         |> Vector.scalarDivide s.Radius
                         |> Vector.unitVector
                 } |> Some
@@ -63,7 +68,7 @@ module Shape =
         let aV = r.Position
         let bV = UnitVector.toVector r.Direction
         let cV = s.Center
-        let aMinusC = Vector.sub cV aV
+        let aMinusC = aV - cV
 
         let a = Vector.dot bV bV
         let b =
@@ -81,9 +86,16 @@ module Shape =
             tryCreateHitRecord v
             |> Option.orElse (tryCreateHitRecord v')
 
-    let planeCollides (p : Plane) (pr : ParameterRange) (r : Ray) =
+[<RequireQualifiedAccess>]
+module internal Plane =
+
+    let rayIntersects (p : Plane) (pr : ParameterRange) (r : Ray) =
         let rp = { Point.X =r.Position.X; Y = r.Position.Y; Z = r.Position.Z }
-        let t = Vector.dot (p.Point - rp) (UnitVector.toVector p.Normal) / (Vector.dot (UnitVector.toVector r.Direction) (UnitVector.toVector p.Normal))
+        let t =
+            Vector.dot
+                (p.Point - rp)
+                (UnitVector.toVector p.Normal)
+            |> fun v -> v / (Vector.dot (UnitVector.toVector r.Direction) (UnitVector.toVector p.Normal))
         if ParameterRange.inRange pr t then
             let pt = Ray.getPosition t r
             {
@@ -93,9 +105,12 @@ module Shape =
             } |> Some
         else None
 
+[<RequireQualifiedAccess>]
+module Shape =
+
     let collides (pr : ParameterRange) (r : Ray) (s : Shape) =
         match s with
         | Sphere s ->
-            sphereCollides pr r s
+            Sphere.rayIntersects pr r s
         | Plane p ->
-            planeCollides p pr r
+            Plane.rayIntersects p pr r

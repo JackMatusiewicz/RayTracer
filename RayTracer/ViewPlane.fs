@@ -91,8 +91,6 @@ module Pinhole =
             (fun r c ->
                 let r = pinhole.ViewPlane.VerticalResolution - r - 1
                 let x,y = ViewPlane.getXY r c pinhole.ViewPlane
-                //let rayOrigin = { Vector.X = x; Y = y; Z = pinhole.CameraLocation.Z }
                 let dir = getRayDirection x y pinhole
-                let vv = { Vector.X = pinhole.CameraLocation.X; Vector.Y = pinhole.CameraLocation.Y; Vector.Z = pinhole.CameraLocation.Z }
-                { Position = vv; Direction = dir })
+                { Position = pinhole.CameraLocation; Direction = dir })
                         
