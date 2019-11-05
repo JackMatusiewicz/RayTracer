@@ -47,9 +47,9 @@ module Pinhole =
             |> fun up -> Vector.cross up w
         let v = Vector.cross w u
         {
-            U = Vector.unitVector u
-            V = Vector.unitVector v
-            W = Vector.unitVector w
+            U = Vector.normalise u
+            V = Vector.normalise v
+            W = Vector.normalise w
         }
 
     let make
@@ -81,7 +81,7 @@ module Pinhole =
             |> Vector.scalarMultiply pinhole.CameraDistance
         let ret =
             u + v - w
-            |> Vector.unitVector
+            |> Vector.normalise
         ret
 
     let getRays (pinhole : Pinhole) : Ray[,] =

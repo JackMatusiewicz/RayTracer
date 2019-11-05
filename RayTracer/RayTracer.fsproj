@@ -11,8 +11,9 @@
         <Compile Include="Point.fs" />
         <Compile Include="Ppm.fs" />
         <Compile Include="Ray.fs" />
-        <Compile Include="ViewPlane.fs" />
         <Compile Include="Shape.fs" />
+        <Compile Include="Light.fs" />
+        <Compile Include="ViewPlane.fs" />
         <Compile Include="Program.fs" />
     </ItemGroup>
 

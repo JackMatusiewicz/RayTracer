@@ -65,8 +65,8 @@ let hackyScene () =
             }
             { Point.X = 0.; Y = 0.; Z = -3200. }
             500.
-            ({ Vector.X = 0.; Y = 1.; Z = 0. } |> Vector.unitVector)
-            ({ Vector.X = 0.; Y = 0.; Z = 1. } |> Vector.unitVector)
+            ({ Vector.X = 0.; Y = 1.; Z = 0. } |> Vector.normalise)
+            ({ Vector.X = 0.; Y = 0.; Z = 1. } |> Vector.normalise)
             (*{ Point.X = -2000.; Y = 0.; Z = -600. }
             500.
             ({ Vector.X = 0.; Y = 1.; Z = 0. } |> Vector.unitVector)

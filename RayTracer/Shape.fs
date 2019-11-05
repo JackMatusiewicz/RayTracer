@@ -63,7 +63,7 @@ module internal Sphere =
                     Normal =
                         p - s.Center
                         |> Vector.scalarDivide s.Radius
-                        |> Vector.unitVector
+                        |> Vector.normalise
                     Colour = c
                 } |> Some
             else None

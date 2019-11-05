@@ -87,7 +87,7 @@ module Vector =
         squaredLength x
         |> Math.Sqrt
 
-    let unitVector (x : Vector) : UnitVector =
+    let normalise (x : Vector) : UnitVector =
         let len = length x
         scalarDivide len x
         |> UnitVector
