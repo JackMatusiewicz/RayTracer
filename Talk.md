@@ -99,3 +99,59 @@ Once we're done with that, we need to talk about how we deal with multiple objec
         So, the option type is a very simple type that allows you to explicitly show that you're potentially not going to return anything.
 
 Next: Talk about the camera (todo - move this way up to the top!)
+    Talk about how orthographic projection isn't enough, we want to be able to move around the scene to get cool angles!
+    Talk about what a virtual pinhole camera is. How it differs from an actual pinhole camera and how we implement it
+    Show some simple pictures of why we did this!
+
+Next: Lighting
+    So, what we currently have can be achieved in paint...hurray?
+
+    Time to go to the next level: we need lights and shading!
+
+So, how do we deal with lighting? Well, we need to compute the light that is reflected off our surfaces towards
+the camera. What do we need for this?
+	Camera direction
+	Light direction (for each light in the scene)
+	Surface normal
+	Material parameters (colour, shininess etc)
+
+To start with, we'll just support a diffuse material (lambertian)
+	Light will be scattered uniformly in all directions
+	Relies on lambert's cosine law: light per unit area is proportional to the angle between the incident light
+	ray and the surface normal at that point (cos theta)
+
+So, as was said previously, shading is independent of viewing direction of lambertian shading:
+	L_d = k_d * I * max(0, Vector.dot n i)
+
+	L_d is the reflected light colour
+	k_d is the diffuse coefficient
+	I is the illumination from the light
+	n,i are the vectors for the surface normal and the incident light ray, respectively.
+
+What are the two types of light we'll support?
+	Local light (spot light) - will have a position
+	Directional light - has no position but a direction
+
+Remember: Our surface is only illuminated _if_ nothing blocks the light from our surface!
+So, we need to trace the light ray to confirm it hits!
+So, our light ray is going to have a point of the surface hit, and a direction of (lightPos - point).
+At this point, it works if you enable the small delta for checking the t parameter, or it's fucked.
+This is due to FP errors
+
+Now, what we'll notice is that the shadows look unrealistic, nothing is ever _that_ black unless it's complete darkness.
+
+The solution is to add an ambient light, to make everything a little bit softer, then we're done!
+
+What about a more reflective material?
+Phong is the specular shader that we'll implement
+
+h = (v + l) / ||v + l|| (l in incident light, v is exitant)
+L_s = k_s * I * max (0, n.h)^n (n is a parameter we can control on the material)
+
+L_a = k_a * I_a (this is ambient light, makes the black shadows look more real)
+
+L_a is once per intersection hit, L_d and L_s are once per light per intersection point (assuming nothing is blocked)
+
+Checking if a light ray is blocked: Fire in the direction to the light source (will either be calculated for non-directional lights or just the reverse of the directional light) and see if it collides with _anything_
+
+Super simple!
