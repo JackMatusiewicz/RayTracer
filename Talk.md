@@ -157,3 +157,6 @@ Checking if a light ray is blocked: Fire in the direction to the light source (w
 Super simple!
 
 Replace I with I / r2 where r is the radius of the circle the collision point makes with the centre of the light (this defines light falloff) - only for point lights!
+    We'll call these spot lights, they're a position in the world, with the I is divided by r^2.
+    
+    

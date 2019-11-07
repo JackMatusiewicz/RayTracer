@@ -2,7 +2,6 @@
 
 open System
 open RayTracer
-open RayTracer
 
 let shapes =
     [
