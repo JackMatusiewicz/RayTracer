@@ -31,7 +31,6 @@ type Pinhole =
         CameraDistance : float
         Up : UnitVector
         Onb : OrthonormalBasis
-        
     }
 
 [<RequireQualifiedAccess>]
@@ -93,4 +92,3 @@ module Pinhole =
                 let x,y = ViewPlane.getXY r c pinhole.ViewPlane
                 let dir = getRayDirection x y pinhole
                 { Position = pinhole.CameraLocation; Direction = dir })
-                        

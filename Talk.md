@@ -155,3 +155,5 @@ L_a is once per intersection hit, L_d and L_s are once per light per intersectio
 Checking if a light ray is blocked: Fire in the direction to the light source (will either be calculated for non-directional lights or just the reverse of the directional light) and see if it collides with _anything_
 
 Super simple!
+
+Replace I with I / r2 where r is the radius of the circle the collision point makes with the centre of the light (this defines light falloff) - only for point lights!

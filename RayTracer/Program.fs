@@ -2,16 +2,17 @@
 
 open System
 open RayTracer
+open RayTracer
 
 let shapes =
     [
         {
             Shape = Sphere { Center = { X = 0.; Y = 0.; Z = -1200. }; Radius = 600. }
-            Colour = { R = 255uy; G = 0uy; B = 0uy }
+            Colour = { R = 1.; G = 0.; B = 0. }
         }
         {
             Shape = Sphere { Center = { X = 0.; Y = 0.; Z = 0. }; Radius = 600. }
-            Colour = { R = 0uy; G = 255uy; B = 0uy }
+            Colour = { R = 0.; G = 1.; B = 0. }
         }
     ]
 
@@ -30,32 +31,48 @@ let rec multiCont (xs : ((('a -> 'k) -> 'k) list)) (f : 'a list -> 'k) : 'k =
         h (fun a -> multiCont t (fun xs -> a :: xs |> f))
 
 // Deals with the path of a single ray.
-let rec rayCollides' (ran : Random) (shapes : SceneObject list) (r : Ray) (kont : Colour -> 'k) : 'k =
+let rec rayCollides' (shapes : SceneObject list) (lights : Light list) (r : Ray) (kont : Colour -> 'k) : 'k =
     let collisionPoints =
         List.map (Shape.collides { Min = 0.001 } r) shapes
         |> List.choose id
     match collisionPoints with
     | [] ->
         {
-            R = 0uy
-            G = 0uy
-            B = 0uy
+            R = 0.
+            G = 0.
+            B = 0.
         }
         |> kont
     | vs ->
         let v =
             List.sortBy (fun hr -> hr.T) vs
             |> List.head
-        v.Colour |> kont
+        let mutable col = { R = 0.; G = 0.; B = 0. }
+        for l in lights do
+            let dir =
+                Light.direction v l
+                |> UnitVector.toVector
+                |> Vector.scalarMultiply -1.
+                |> Vector.normalise
+            let lightRay = { Ray.Position = v.CollisionPoint; Direction = dir }
+            let collisionPoints =
+                List.map (Shape.collides { Min = 0.001 } lightRay) shapes
+                |> List.choose id
+            match collisionPoints with
+            | [] ->
+                failwith "colour from light"
+            | _ -> { R = 0.; G = 0.; B = 0. }
+            |> fun c -> col <- col + c
+            
+        col |> kont
 
 // Deals with all rays for a particular cell (anti aliasing)
-let rec rayCollides (ran : Random) (shapes : SceneObject list) (r : Ray list) : Colour =
+let rec rayCollides (shapes : SceneObject list) (lights : Light list) (r : Ray list) : Colour =
     List.map
-        (fun ray -> rayCollides' ran shapes ray id) r
+        (fun ray -> rayCollides' shapes lights ray id) r
     |> Colour.reduceAndAverage
 
 let hackyScene () =
-    let r = System.Random ()
     let pinhole =
         Pinhole.make
             {
@@ -63,17 +80,19 @@ let hackyScene () =
                 VerticalResolution = 1080
                 PixelSize = 1.
             }
-            { Point.X = 0.; Y = 0.; Z = -3200. }
+            (*{ Point.X = 0.; Y = 0.; Z = -3200. }
             500.
             ({ Vector.X = 0.; Y = 1.; Z = 0. } |> Vector.normalise)
-            ({ Vector.X = 0.; Y = 0.; Z = 1. } |> Vector.normalise)
-            (*{ Point.X = -2000.; Y = 0.; Z = -600. }
+            ({ Vector.X = 0.; Y = 0.; Z = 1. } |> Vector.normalise)*)
+            { Point.X = -2000.; Y = 0.; Z = -600. }
             500.
-            ({ Vector.X = 0.; Y = 1.; Z = 0. } |> Vector.unitVector)
-            ({ Vector.X = 1.; Y = 0.; Z = 0. } |> Vector.unitVector)*)
-    
+            ({ Vector.X = 0.; Y = 1.; Z = 0. } |> Vector.normalise)
+            ({ Vector.X = 1.; Y = 0.; Z = 0. } |> Vector.normalise)
+
+    let l = DirectionalLight.make (Vector.normalise { X = 0.; Y = 0.; Z = 1.; }) { R = 1.; G = 1.; B = 1. } 1.
+        
     Pinhole.getRays pinhole
-    |> Array2D.map (List.singleton >> rayCollides r shapes)
+    |> Array2D.map (List.singleton >> rayCollides shapes [l])
     |> Ppm.toPpm
     |> Ppm.toDisk "testImage"
 

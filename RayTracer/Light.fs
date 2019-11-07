@@ -1,6 +1,11 @@
 namespace RayTracer
 
-type internal DirectionalLight = DL of Point * Colour * float
+type internal DirectionalLight =
+    {
+        Direction : UnitVector
+        Colour : Colour
+        L : float
+    }
 
 type Light =
     internal | Directional of DirectionalLight
@@ -8,15 +13,14 @@ type Light =
 [<RequireQualifiedAccess>]
 module DirectionalLight =
 
-    let internal direction (hr : HitRecord) (DL (pos, _,_) : DirectionalLight) : UnitVector =
-        pos - hr.CollisionPoint
-        |> Vector.normalise
+    let internal direction (hr : HitRecord) (dl : DirectionalLight) : UnitVector =
+        dl.Direction
 
-    let internal luminosity (DL (_, col,ls) : DirectionalLight) : Colour =
-        Colour.scalarMultiply ls col
+    let internal luminosity (dl : DirectionalLight) : Colour =
+        Colour.scalarMultiply dl.L dl.Colour
 
-    let make (position : Point) (colour : Colour) (luminosity : float) : Light =
-        DL (position, colour, luminosity)
+    let make (direction : UnitVector) (colour : Colour) (luminosity : float) : Light =
+        { Direction = direction; Colour = colour; L = luminosity }
         |> Directional
 
 [<RequireQualifiedAccess>]
