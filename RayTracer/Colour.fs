@@ -19,9 +19,9 @@ type Colour =
 
     static member (*) (l : Colour, r : Colour) : Colour =
         {
-            R = l.R + r.R
-            G = l.G + r.G
-            B = l.B + r.B
+            R = l.R * r.R
+            G = l.G * r.G
+            B = l.B * r.B
         }
 
 [<RequireQualifiedAccess>]

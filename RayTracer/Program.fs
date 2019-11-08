@@ -13,6 +13,10 @@ let shapes =
             Shape = Sphere { Center = { X = 0.; Y = 0.; Z = 0. }; Radius = 600. }
             Colour = { R = 0.; G = 1.; B = 0. }
         }
+        {
+            Shape = Plane { Point = { X = 0.; Y = -600.; Z = 0. }; Normal = Vector.normalise { Vector.X = 0.; Y = 1.; Z = 0. } }
+            Colour = { R = 0.5; G = 0.5; B = 0.25 }
+        }
     ]
 
 let rec randomPointInUnitSphere (r : Random) : Vector =
@@ -46,7 +50,7 @@ let rec rayCollides' (shapes : SceneObject list) (lights : Light list) (r : Ray)
         let v =
             List.sortBy (fun hr -> hr.T) vs
             |> List.head
-        let mutable col = { R = 0.1; G = 0.1; B = 0.1 } //Hacky ambient light
+        let mutable col = (*{R = 0.; G = 0.; B = 0.}*) { R = 0.025; G = 0.025; B = 0.025 } //Hacky ambient light
         for l in lights do
             let dir =
                 Light.direction v l
@@ -60,10 +64,12 @@ let rec rayCollides' (shapes : SceneObject list) (lights : Light list) (r : Ray)
             match collisionPoints with
             | [] ->
                 Colour.scalarMultiply (Math.Max (0., Vector.dot (UnitVector.toVector v.Normal) (UnitVector.toVector dir))) (Light.luminosity l)
-            | _ -> { R = 0.; G = 0.; B = 0. }
+            | _ ->
+                //Colour.scalarMultiply (Math.Max (0., Vector.dot (UnitVector.toVector v.Normal) (UnitVector.toVector dir))) (Light.luminosity l) // Hacky way to avoid doing shadows
+                { R = 0.; G = 0.; B = 0. }
             |> fun c -> col <- col + c
             
-        col |> kont
+        col * v.Colour |> kont
 
 // Deals with all rays for a particular cell (anti aliasing)
 let rec rayCollides (shapes : SceneObject list) (lights : Light list) (r : Ray list) : Colour =
@@ -83,10 +89,10 @@ let hackyScene () =
             500.
             ({ Vector.X = 0.; Y = 1.; Z = 0. } |> Vector.normalise)
             ({ Vector.X = 0.; Y = 0.; Z = 1. } |> Vector.normalise)*)
-            { Point.X = -2000.; Y = 0.; Z = -600. }
+            { Point.X = -2000.; Y = 1000.; Z = -600. }
             500.
             ({ Vector.X = 0.; Y = 1.; Z = 0. } |> Vector.normalise)
-            ({ Vector.X = 1.; Y = 0.; Z = 0. } |> Vector.normalise)
+            ({ Vector.X = 2000.; Y = -1000.; Z = 600. } |> Vector.normalise)
 
     let l = DirectionalLight.make (Vector.normalise { X = 0.; Y = -1.; Z = 1.; }) { R = 1.; G = 1.; B = 1. } 1.
         
