@@ -67,3 +67,8 @@ module Light =
             DirectionalLight.luminosity d
         | Point p ->
             PointLight.luminosity p
+
+    let getPosition (l : Light) : Point option =
+        match l with
+        | Directional _ -> None
+        | Point p -> Some p.Position

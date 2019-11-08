@@ -46,7 +46,7 @@ let rec rayCollides' (shapes : SceneObject list) (lights : Light list) (r : Ray)
         let v =
             List.sortBy (fun hr -> hr.T) vs
             |> List.head
-        let mutable col = { R = 0.; G = 0.; B = 0. }
+        let mutable col = { R = 0.1; G = 0.1; B = 0.1 } //Hacky ambient light
         for l in lights do
             let dir =
                 Light.direction v l
@@ -59,7 +59,7 @@ let rec rayCollides' (shapes : SceneObject list) (lights : Light list) (r : Ray)
                 |> List.choose id
             match collisionPoints with
             | [] ->
-                failwith "colour from light"
+                Colour.scalarMultiply (Math.Max (0., Vector.dot (UnitVector.toVector v.Normal) (UnitVector.toVector dir))) (Light.luminosity l)
             | _ -> { R = 0.; G = 0.; B = 0. }
             |> fun c -> col <- col + c
             
@@ -88,7 +88,7 @@ let hackyScene () =
             ({ Vector.X = 0.; Y = 1.; Z = 0. } |> Vector.normalise)
             ({ Vector.X = 1.; Y = 0.; Z = 0. } |> Vector.normalise)
 
-    let l = DirectionalLight.make (Vector.normalise { X = 0.; Y = 0.; Z = 1.; }) { R = 1.; G = 1.; B = 1. } 1.
+    let l = DirectionalLight.make (Vector.normalise { X = 0.; Y = -1.; Z = 1.; }) { R = 1.; G = 1.; B = 1. } 1.
         
     Pinhole.getRays pinhole
     |> Array2D.map (List.singleton >> rayCollides shapes [l])
