@@ -1,5 +1,7 @@
 namespace RayTracer
 
+open System
+
 [<Struct>]
 type ViewPlane =
     {
@@ -83,12 +85,18 @@ module Pinhole =
             |> Vector.normalise
         ret
 
-    let getRays (pinhole : Pinhole) : Ray[,] =
+    let getRays (ran : Random) (pinhole : Pinhole) : Ray list[,] =
         Array2D.init
             pinhole.ViewPlane.VerticalResolution
             pinhole.ViewPlane.HorizontalResolution
             (fun r c ->
-                let r = pinhole.ViewPlane.VerticalResolution - r - 1
-                let x,y = ViewPlane.getXY r c pinhole.ViewPlane
-                let dir = getRayDirection x y pinhole
-                { Position = pinhole.CameraLocation; Direction = dir })
+                List.init
+                    3
+                    (fun _ ->
+                        let r = pinhole.ViewPlane.VerticalResolution - r - 1
+                        let x,y =
+                            ViewPlane.getXY r c pinhole.ViewPlane
+                            |> fun (x,y) -> (x + ran.NextDouble()), (y + ran.NextDouble())
+                        let dir = getRayDirection x y pinhole
+                        { Position = pinhole.CameraLocation; Direction = dir })
+            )

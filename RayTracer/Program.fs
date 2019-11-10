@@ -1,31 +1,35 @@
-﻿// Learn more about F# at http://fsharp.org
-
-open System
+﻿open System
 open RayTracer
 
 let shapes =
     [
         {
             Shape = Sphere { Center = { X = 0.; Y = 0.; Z = -1200. }; Radius = 600. }
-            Colour = { R = 1.; G = 0.; B = 0. }
+            Shader =
+                {
+                    Colour = { R = 1.; G = 0.; B = 0. }
+                    AlbedoCoefficient = 0.5
+                    Exponent = 5.
+                } |> Glossy
         }
         {
             Shape = Sphere { Center = { X = 0.; Y = 0.; Z = 0. }; Radius = 600. }
-            Colour = { R = 0.; G = 1.; B = 0. }
+            Shader =
+                {
+                    Lambertian.Colour = { R = 0.; G = 1.; B = 0. }
+                    AlbedoCoefficient = 0.5
+                } |> Diffuse
         }
         {
             Shape = Plane { Point = { X = 0.; Y = -600.; Z = 0. }; Normal = Vector.normalise { Vector.X = 0.; Y = 1.; Z = 0. } }
-            Colour = { R = 0.5; G = 0.5; B = 0.25 }
+            Shader =
+                {
+                    Lambertian.Colour = { R = 0.5; G = 0.5; B = 0.25 }
+                    AlbedoCoefficient = 0.5
+                    //Exponent = 1.
+                } |> Diffuse
         }
     ]
-
-let rec randomPointInUnitSphere (r : Random) : Vector =
-    let p : Vector =
-        Vector.make (r.NextDouble ()) (r.NextDouble ()) (r.NextDouble ())
-        |> Vector.scalarMultiply 2.
-        |> Vector.sub { X = 1.; Y = 1.; Z = 1. }
-    if Vector.squaredLength p < 1. then p
-    else randomPointInUnitSphere r
 
 let rec multiCont (xs : ((('a -> 'k) -> 'k) list)) (f : 'a list -> 'k) : 'k =
     match xs with
@@ -34,7 +38,12 @@ let rec multiCont (xs : ((('a -> 'k) -> 'k) list)) (f : 'a list -> 'k) : 'k =
         h (fun a -> multiCont t (fun xs -> a :: xs |> f))
 
 // Deals with the path of a single ray.
-let rec rayCollides' (shapes : SceneObject list) (lights : Light list) (r : Ray) (kont : Colour -> 'k) : 'k =
+let rec rayCollides'
+    (shapes : SceneObject list)
+    (lights : Light list)
+    (r : Ray)
+    : Colour
+    =
     let collisionPoints =
         List.map (Shape.collides { Min = 0.001 } r) shapes
         |> List.choose id
@@ -45,15 +54,16 @@ let rec rayCollides' (shapes : SceneObject list) (lights : Light list) (r : Ray)
             G = 0.
             B = 0.
         }
-        |> kont
     | vs ->
         let v =
             List.sortBy (fun hr -> hr.T) vs
             |> List.head
-        let mutable col = (*{R = 0.; G = 0.; B = 0.}*) { R = 0.025; G = 0.025; B = 0.025 } //Hacky ambient light
+        let mutable col =
+            Shader.baseColour v.Shader
+            |> Colour.scalarMultiply 0.025
         for l in lights do
             let dir =
-                Light.direction v l
+                Light.direction l
                 |> UnitVector.toVector
                 |> Vector.scalarMultiply -1.
                 |> Vector.normalise
@@ -63,18 +73,23 @@ let rec rayCollides' (shapes : SceneObject list) (lights : Light list) (r : Ray)
                 |> List.choose id
             match collisionPoints with
             | [] ->
-                Colour.scalarMultiply (Math.Max (0., Vector.dot (UnitVector.toVector v.Normal) (UnitVector.toVector dir))) (Light.luminosity l)
+                Shader.colour
+                    v.CollisionPoint
+                    v.Normal
+                    dir
+                    (r.Direction |> UnitVector.toVector |> Vector.scalarMultiply -1. |> Vector.normalise)
+                    (rayCollides' shapes lights)
+                    v.Shader
+                |> (*) (Light.luminosity l)
             | _ ->
-                //Colour.scalarMultiply (Math.Max (0., Vector.dot (UnitVector.toVector v.Normal) (UnitVector.toVector dir))) (Light.luminosity l) // Hacky way to avoid doing shadows
                 { R = 0.; G = 0.; B = 0. }
             |> fun c -> col <- col + c
             
-        col * v.Colour |> kont
+        col
 
 // Deals with all rays for a particular cell (anti aliasing)
 let rec rayCollides (shapes : SceneObject list) (lights : Light list) (r : Ray list) : Colour =
-    List.map
-        (fun ray -> rayCollides' shapes lights ray id) r
+    List.map (rayCollides' shapes lights) r
     |> Colour.reduceAndAverage
 
 let hackyScene () =
@@ -96,8 +111,8 @@ let hackyScene () =
 
     let l = DirectionalLight.make (Vector.normalise { X = 0.; Y = -1.; Z = 1.; }) { R = 1.; G = 1.; B = 1. } 1.
         
-    Pinhole.getRays pinhole
-    |> Array2D.map (List.singleton >> rayCollides shapes [l])
+    Pinhole.getRays (System.Random ()) pinhole
+    |> Array2D.map (rayCollides shapes [l])
     |> Ppm.toPpm
     |> Ppm.toDisk "testImage"
 

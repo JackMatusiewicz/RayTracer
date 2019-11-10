@@ -92,6 +92,9 @@ module Vector =
         scalarDivide len x
         |> UnitVector
 
+    let toString (v : Vector) : string =
+        sprintf "(%.3f, %.3f, %.3f)" v.X v.Y v.Z
+
 [<RequireQualifiedAccess>]
 module UnitVector =
 

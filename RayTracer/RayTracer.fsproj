@@ -11,7 +11,7 @@
         <Compile Include="Point.fs" />
         <Compile Include="Ppm.fs" />
         <Compile Include="Ray.fs" />
-        <Compile Include="Material.fs" />
+        <Compile Include="Shader.fs" />
         <Compile Include="Shape.fs" />
         <Compile Include="Light.fs" />
         <Compile Include="ViewPlane.fs" />

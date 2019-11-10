@@ -7,7 +7,7 @@ type HitRecord =
         T : float
         CollisionPoint : Point
         Normal : UnitVector
-        Colour : Colour
+        Shader : Shader
     }
 
 [<Struct>]
@@ -42,7 +42,7 @@ type Shape =
 type SceneObject =
     {
         Shape : Shape
-        Colour : Colour
+        Shader : Shader
     }
 
 [<RequireQualifiedAccess>]
@@ -51,7 +51,7 @@ module internal Sphere =
     let rayIntersects
         (range : ParameterRange)
         (r : Ray)
-        (c : Colour)
+        (c : Shader)
         (s : Sphere)
         =
         let tryCreateHitRecord v =
@@ -64,7 +64,7 @@ module internal Sphere =
                         p - s.Center
                         |> Vector.scalarDivide s.Radius
                         |> Vector.normalise
-                    Colour = c
+                    Shader = c
                 } |> Some
             else None
 
@@ -95,7 +95,7 @@ module internal Plane =
     let rayIntersects
         (p : Plane)
         (pr : ParameterRange)
-        (c : Colour)
+        (c : Shader)
         (r : Ray)
         =
         let rp = { Point.X =r.Position.X; Y = r.Position.Y; Z = r.Position.Z }
@@ -110,7 +110,7 @@ module internal Plane =
                 T = t
                 CollisionPoint = pt
                 Normal = p.Normal
-                Colour = c
+                Shader = c
             } |> Some
         else None
 
@@ -120,6 +120,6 @@ module Shape =
     let collides (pr : ParameterRange) (r : Ray) (s : SceneObject) =
         match s.Shape with
         | Sphere sp ->
-            Sphere.rayIntersects pr r s.Colour sp
+            Sphere.rayIntersects pr r s.Shader sp
         | Plane p ->
-            Plane.rayIntersects p pr s.Colour r
+            Plane.rayIntersects p pr s.Shader r

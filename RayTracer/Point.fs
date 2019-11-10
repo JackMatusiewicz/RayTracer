@@ -58,3 +58,5 @@ module Point =
         lengthSquared p
         |> System.Math.Sqrt
 
+    let toString (v : Point) : string =
+        sprintf "(%.3f, %.3f, %.3f)" v.X v.Y v.Z
