@@ -15,95 +15,105 @@ type Specular =
         Exponent : float
     }
 
-type Shader =
-    | Diffuse of Lambertian
-    | Glossy of Specular
+[<RequireQualifiedAccess>]
+module Lambertian =
+
+    let colour (normal : UnitVector) (inDirection : UnitVector) (l : Lambertian) =
+        let normal = UnitVector.toVector normal
+        let inDirection = UnitVector.toVector inDirection
+        let angleBetweenVectors =
+            Vector.dot normal inDirection
+        if angleBetweenVectors < 0. then
+            { R = 0.; G = 0.; B = 0. }
+        else
+        Colour.scalarMultiply l.AlbedoCoefficient l.Colour
 
 [<RequireQualifiedAccess>]
-module Shader =
+module Specular =
 
     let colour
-        (contactPoint : Point)
         (normal : UnitVector)
         (inDirection : UnitVector)
         (outDirection : UnitVector)
-        (getColour : Ray -> Colour)
-        (s : Shader)
+        (s : Specular)
         : Colour
         =
         let normal = UnitVector.toVector normal
         let inDirection = UnitVector.toVector inDirection
         let outDirection = UnitVector.toVector outDirection
-        let angleBetweenVectors =
-            Vector.dot normal inDirection
-        match s with
-        | Diffuse l ->
-            if angleBetweenVectors < 0. then
-                { R = 0.; G = 0.; B = 0. }
-            else
-            Colour.scalarMultiply l.AlbedoCoefficient l.Colour
-        | Glossy s ->
-            let nDotIn = Vector.dot normal inDirection
-            let r =
-                (Vector.scalarMultiply -1. inDirection) + (Vector.scalarMultiply (2. * nDotIn) normal)
-                |> Vector.normalise
-                |> UnitVector.toVector
-            let rDotOut = Vector.dot r outDirection
-            if rDotOut > 0. then
-                s.Colour
-                |> Colour.scalarMultiply s.AlbedoCoefficient
-                |> Colour.scalarMultiply (Math.Pow (rDotOut, s.Exponent))
-            else { R = 0.; G = 0.; B = 0. }
-
-    let baseColour (s : Shader) : Colour =
-        match s with
-        | Diffuse l -> l.Colour
-        | Glossy g -> g.Colour
+        let nDotIn = Vector.dot normal inDirection
+        let r =
+            (Vector.scalarMultiply -1. inDirection) + (Vector.scalarMultiply (2. * nDotIn) normal)
+            |> Vector.normalise
+            |> UnitVector.toVector
+        let rDotOut = Vector.dot r outDirection
+        if rDotOut > 0. then
+            s.Colour
+            |> Colour.scalarMultiply s.AlbedoCoefficient
+            |> Colour.scalarMultiply (Math.Pow (rDotOut, s.Exponent))
+        else { R = 0.; G = 0.; B = 0. }    
 
 type Matte =
     {
-        Diffuse : Shader
+        Diffuse : Lambertian
     }
 
 type Phong =
     {
-        Diffuse : Shader
-        Specular : Shader
+        Diffuse : Lambertian
+        Specular : Specular
+    }
+
+type Mirror =
+    {
+        Colour : Colour
     }
 
 type Material =
     | Matte of Matte
     | Phong of Phong
+    | Reflective of Mirror
 
 [<RequireQualifiedAccess>]
 module Material =
+
     let colour
-        (contactPoint : Point)
         (normal : UnitVector)
         (inDirection : UnitVector)
         (outDirection : UnitVector)
-        (l : Light)
+        (lightLuminosity : Colour)
+        (contactPoint : Point)
         (getColour : Ray -> Colour)
         (m : Material)
         : Colour
         =
-        
         match m with
         | Matte m ->
-            let ambient = Shader.baseColour m.Diffuse * {R = 0.1; G = 0.1; B = 0.1}
+            let ambient = Colour.scalarMultiply 0.1 m.Diffuse.Colour
             let nDotIn = Vector.dot (UnitVector.toVector normal) (UnitVector.toVector inDirection)
             if nDotIn < 0. then ambient
             else
-                let col = Shader.colour contactPoint normal inDirection outDirection getColour m.Diffuse
-                (Light.luminosity l) * col + ambient
+                let col = Lambertian.colour normal inDirection m.Diffuse
+                lightLuminosity * col + ambient
                 |> Colour.scalarMultiply nDotIn
         | Phong p ->
-            let ambient = Shader.baseColour p.Diffuse * {R = 0.1; G = 0.1; B = 0.1}
+            let ambient = Colour.scalarMultiply 0.1 p.Diffuse.Colour
             let nDotIn = Vector.dot (UnitVector.toVector normal) (UnitVector.toVector inDirection)
             if nDotIn < 0. then
                 ambient
             else
-                let diffCol = Shader.colour contactPoint normal inDirection outDirection getColour p.Diffuse
-                let specCol = Shader.colour contactPoint normal inDirection outDirection getColour p.Specular
-                (diffCol + specCol) * (Light.luminosity l)
+                let diffCol = Lambertian.colour normal inDirection p.Diffuse
+                let specCol = Specular.colour normal inDirection outDirection p.Specular
+                (diffCol + specCol) * lightLuminosity
                 |> Colour.scalarMultiply nDotIn
+        | Reflective m ->
+            let normal = UnitVector.toVector normal
+            let inDirection = UnitVector.toVector inDirection
+            let nDotIn = Vector.dot normal inDirection
+            let r =
+                (Vector.scalarMultiply -1. inDirection) + (Vector.scalarMultiply (2. * nDotIn) normal)
+                |> Vector.normalise
+            let ray = { Ray.Position = contactPoint; Direction = r }
+            getColour ray
+            |> Colour.scalarMultiply (Vector.dot normal inDirection)
+            |> (+) (Colour.scalarMultiply 0.1 m.Colour)

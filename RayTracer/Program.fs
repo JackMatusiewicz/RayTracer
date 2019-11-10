@@ -4,15 +4,20 @@ open RayTracer
 let shapes =
     [
         {
-            Shape = Sphere { Center = { X = 450.; Y = 0.; Z = -1200. }; Radius = 100. }
+            Shape = Sphere { Center = { X = 450.; Y = 0.; Z = -1200. }; Radius = 150. }
             Shader =
-                {
-                    Colour = { R = 1.; G = 1.; B = 0.5 }
-                    AlbedoCoefficient = 0.5
-                    Exponent = 3.
-                }
-                |> Glossy
-                |> fun s -> { Matte.Diffuse = s } |> Matte
+                let specular =
+                    {
+                        Colour = { R = 1.; G = 1.; B = 0.5 }
+                        AlbedoCoefficient = 0.5
+                        Exponent = 7.
+                    }
+                let diffuse =
+                    {
+                        Colour = { R = 1.; G = 1.; B = 0.5 }
+                        AlbedoCoefficient = 0.5
+                    }
+                { Phong.Diffuse = diffuse; Specular = specular } |> Phong
         }
         {
             Shape = Sphere { Center = { X = 150.; Y = 0.; Z = -600. }; Radius = 300. }
@@ -21,7 +26,6 @@ let shapes =
                     Lambertian.Colour = { R = 0.; G = 1.; B = 0. }
                     AlbedoCoefficient = 0.5
                 }
-                |> Diffuse
                 |> fun s -> { Matte.Diffuse = s } |> Matte
         }
         {
@@ -31,7 +35,6 @@ let shapes =
                     Lambertian.Colour = { R = 0.; G = 0.; B = 1. }
                     AlbedoCoefficient = 0.5
                 }
-                |> Diffuse
                 |> fun s -> { Matte.Diffuse = s } |> Matte
         }
         {
@@ -41,19 +44,11 @@ let shapes =
                     Lambertian.Colour = { R = 0.; G = 1.; B = 1. }
                     AlbedoCoefficient = 0.5
                 }
-                |> Diffuse
                 |> fun s -> { Matte.Diffuse = s } |> Matte
         }
         {
             Shape = Plane { Point = { X = 0.; Y = -600.; Z = 0. }; Normal = Vector.normalise { Vector.X = 0.; Y = 1.; Z = 0. } }
-            Shader =
-                {
-                    Lambertian.Colour = { R = 0.5; G = 0.5; B = 0.25 }
-                    AlbedoCoefficient = 0.5
-                    //Exponent = 1.
-                }
-                |> Diffuse
-                |> fun s -> { Matte.Diffuse = s } |> Matte
+            Shader = { Mirror.Colour = { R = 0.5; G = 0.5; B = 0.25 } } |> Reflective
         }
     ]
 
@@ -98,11 +93,11 @@ let rec rayCollides'
             match collisionPoints with
             | [] ->
                 Material.colour
-                    v.CollisionPoint
                     v.Normal
                     dir
                     (r.Direction |> UnitVector.toVector |> Vector.scalarMultiply -1. |> Vector.normalise)
-                    l
+                    (Light.luminosity l)
+                    v.CollisionPoint
                     (rayCollides' shapes lights)
                     v.Material
             | _ ->
