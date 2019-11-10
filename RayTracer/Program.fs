@@ -48,7 +48,19 @@ let shapes =
         }
         {
             Shape = Plane { Point = { X = 0.; Y = -600.; Z = 0. }; Normal = Vector.normalise { Vector.X = 0.; Y = 1.; Z = 0. } }
-            Shader = { Mirror.Colour = { R = 0.5; G = 0.5; B = 0.25 } } |> Reflective
+            Shader =
+                let specular =
+                    {
+                        Colour = { R = 0.5; G = 0.5; B = 0.25 }
+                        AlbedoCoefficient = 0.5
+                        Exponent = 7.
+                    }
+                let diffuse =
+                    {
+                        Colour = { R = 0.5; G = 0.5; B = 0.25 }
+                        AlbedoCoefficient = 0.5
+                    }
+                { Mirror.Phong = { Phong.Diffuse = diffuse; Specular = specular }} |> Reflective
         }
     ]
 

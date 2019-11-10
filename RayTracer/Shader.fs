@@ -66,7 +66,7 @@ type Phong =
 
 type Mirror =
     {
-        Colour : Colour
+        Phong : Phong
     }
 
 type Material =
@@ -77,7 +77,7 @@ type Material =
 [<RequireQualifiedAccess>]
 module Material =
 
-    let colour
+    let rec colour
         (normal : UnitVector)
         (inDirection : UnitVector)
         (outDirection : UnitVector)
@@ -107,6 +107,7 @@ module Material =
                 (diffCol + specCol) * lightLuminosity
                 |> Colour.scalarMultiply nDotIn
         | Reflective m ->
+            let underlyingColour = colour normal inDirection outDirection lightLuminosity contactPoint getColour (Phong m.Phong)
             let normal = UnitVector.toVector normal
             let inDirection = UnitVector.toVector inDirection
             let nDotIn = Vector.dot normal inDirection
@@ -116,4 +117,4 @@ module Material =
             let ray = { Ray.Position = contactPoint; Direction = r }
             getColour ray
             |> Colour.scalarMultiply (Vector.dot normal inDirection)
-            |> (+) (Colour.scalarMultiply 0.1 m.Colour)
+            |> (+) underlyingColour
