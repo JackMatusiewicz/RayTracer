@@ -15,6 +15,7 @@
         <Compile Include="Shader.fs" />
         <Compile Include="Shape.fs" />
         <Compile Include="ViewPlane.fs" />
+        <Compile Include="Scene.fs" />
         <Compile Include="Program.fs" />
     </ItemGroup>
 

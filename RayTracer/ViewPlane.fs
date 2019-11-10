@@ -85,18 +85,14 @@ module Pinhole =
             |> Vector.normalise
         ret
 
-    let getRays (ran : Random) (pinhole : Pinhole) : Ray list[,] =
+    let getRays (pinhole : Pinhole) : Ray[,] =
         Array2D.init
             pinhole.ViewPlane.VerticalResolution
             pinhole.ViewPlane.HorizontalResolution
             (fun r c ->
-                List.init
-                    3
-                    (fun _ ->
-                        let r = pinhole.ViewPlane.VerticalResolution - r - 1
-                        let x,y =
-                            ViewPlane.getXY r c pinhole.ViewPlane
-                            |> fun (x,y) -> (x + ran.NextDouble()), (y + ran.NextDouble())
-                        let dir = getRayDirection x y pinhole
-                        { Position = pinhole.CameraLocation; Direction = dir })
+                let r = pinhole.ViewPlane.VerticalResolution - r - 1
+                let x,y =
+                    ViewPlane.getXY r c pinhole.ViewPlane
+                let dir = getRayDirection x y pinhole
+                { Position = pinhole.CameraLocation; Direction = dir }
             )
