@@ -90,7 +90,7 @@ module Material =
         
         match m with
         | Matte m ->
-            let ambient = Shader.baseColour m.Diffuse * {R = 0.025; G = 0.025; B = 0.025}
+            let ambient = Shader.baseColour m.Diffuse * {R = 0.1; G = 0.1; B = 0.1}
             let nDotIn = Vector.dot (UnitVector.toVector normal) (UnitVector.toVector inDirection)
             if nDotIn < 0. then ambient
             else
@@ -98,7 +98,7 @@ module Material =
                 (Light.luminosity l) * col + ambient
                 |> Colour.scalarMultiply nDotIn
         | Phong p ->
-            let ambient = Shader.baseColour p.Diffuse * {R = 0.025; G = 0.025; B = 0.025}
+            let ambient = Shader.baseColour p.Diffuse * {R = 0.1; G = 0.1; B = 0.1}
             let nDotIn = Vector.dot (UnitVector.toVector normal) (UnitVector.toVector inDirection)
             if nDotIn < 0. then
                 ambient

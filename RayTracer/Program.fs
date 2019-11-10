@@ -4,21 +4,41 @@ open RayTracer
 let shapes =
     [
         {
-            Shape = Sphere { Center = { X = 0.; Y = 0.; Z = -1200. }; Radius = 600. }
+            Shape = Sphere { Center = { X = 450.; Y = 0.; Z = -1200. }; Radius = 100. }
             Shader =
                 {
-                    Colour = { R = 1.; G = 0.; B = 0. }
+                    Colour = { R = 1.; G = 1.; B = 0.5 }
                     AlbedoCoefficient = 0.5
-                    Exponent = 5.
+                    Exponent = 3.
                 }
                 |> Glossy
                 |> fun s -> { Matte.Diffuse = s } |> Matte
         }
         {
-            Shape = Sphere { Center = { X = 0.; Y = 0.; Z = 0. }; Radius = 600. }
+            Shape = Sphere { Center = { X = 150.; Y = 0.; Z = -600. }; Radius = 300. }
             Shader =
                 {
                     Lambertian.Colour = { R = 0.; G = 1.; B = 0. }
+                    AlbedoCoefficient = 0.5
+                }
+                |> Diffuse
+                |> fun s -> { Matte.Diffuse = s } |> Matte
+        }
+        {
+            Shape = Sphere { Center = { X = -150.; Y = 0.; Z = 0. }; Radius = 300. }
+            Shader =
+                {
+                    Lambertian.Colour = { R = 0.; G = 0.; B = 1. }
+                    AlbedoCoefficient = 0.5
+                }
+                |> Diffuse
+                |> fun s -> { Matte.Diffuse = s } |> Matte
+        }
+        {
+            Shape = Sphere { Center = { X = 0.; Y = 400.; Z = 600. }; Radius = 300. }
+            Shader =
+                {
+                    Lambertian.Colour = { R = 0.; G = 1.; B = 1. }
                     AlbedoCoefficient = 0.5
                 }
                 |> Diffuse
@@ -108,10 +128,10 @@ let hackyScene () =
             500.
             ({ Vector.X = 0.; Y = 1.; Z = 0. } |> Vector.normalise)
             ({ Vector.X = 0.; Y = 0.; Z = 1. } |> Vector.normalise)*)
-            { Point.X = -2000.; Y = 1000.; Z = -600. }
+            { Point.X = 0.; Y = 0.; Z = -1800. }
             500.
             ({ Vector.X = 0.; Y = 1.; Z = 0. } |> Vector.normalise)
-            ({ Vector.X = 2000.; Y = -1000.; Z = 600. } |> Vector.normalise)
+            ({ Vector.X = 0.; Y = 0.; Z = 600. } |> Vector.normalise)
 
     let l = DirectionalLight.make (Vector.normalise { X = 0.; Y = -1.; Z = 1.; }) { R = 1.; G = 1.; B = 1. } 1.
         
