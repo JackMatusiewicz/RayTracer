@@ -10,7 +10,9 @@ let shapes =
                     Colour = { R = 1.; G = 0.; B = 0. }
                     AlbedoCoefficient = 0.5
                     Exponent = 5.
-                } |> Glossy
+                }
+                |> Glossy
+                |> fun s -> { Matte.Diffuse = s } |> Matte
         }
         {
             Shape = Sphere { Center = { X = 0.; Y = 0.; Z = 0. }; Radius = 600. }
@@ -18,7 +20,9 @@ let shapes =
                 {
                     Lambertian.Colour = { R = 0.; G = 1.; B = 0. }
                     AlbedoCoefficient = 0.5
-                } |> Diffuse
+                }
+                |> Diffuse
+                |> fun s -> { Matte.Diffuse = s } |> Matte
         }
         {
             Shape = Plane { Point = { X = 0.; Y = -600.; Z = 0. }; Normal = Vector.normalise { Vector.X = 0.; Y = 1.; Z = 0. } }
@@ -27,7 +31,9 @@ let shapes =
                     Lambertian.Colour = { R = 0.5; G = 0.5; B = 0.25 }
                     AlbedoCoefficient = 0.5
                     //Exponent = 1.
-                } |> Diffuse
+                }
+                |> Diffuse
+                |> fun s -> { Matte.Diffuse = s } |> Matte
         }
     ]
 
@@ -58,9 +64,7 @@ let rec rayCollides'
         let v =
             List.sortBy (fun hr -> hr.T) vs
             |> List.head
-        let mutable col =
-            Shader.baseColour v.Shader
-            |> Colour.scalarMultiply 0.025
+        let mutable col = { R = 0.; G = 0.; B = 0. }
         for l in lights do
             let dir =
                 Light.direction l
@@ -73,14 +77,14 @@ let rec rayCollides'
                 |> List.choose id
             match collisionPoints with
             | [] ->
-                Shader.colour
+                Material.colour
                     v.CollisionPoint
                     v.Normal
                     dir
                     (r.Direction |> UnitVector.toVector |> Vector.scalarMultiply -1. |> Vector.normalise)
+                    l
                     (rayCollides' shapes lights)
-                    v.Shader
-                |> (*) (Light.luminosity l)
+                    v.Material
             | _ ->
                 { R = 0.; G = 0.; B = 0. }
             |> fun c -> col <- col + c

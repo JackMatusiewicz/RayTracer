@@ -28,7 +28,9 @@ module Shader =
         (inDirection : UnitVector)
         (outDirection : UnitVector)
         (getColour : Ray -> Colour)
-        (s : Shader) =
+        (s : Shader)
+        : Colour
+        =
         let normal = UnitVector.toVector normal
         let inDirection = UnitVector.toVector inDirection
         let outDirection = UnitVector.toVector outDirection
@@ -39,28 +41,70 @@ module Shader =
             if angleBetweenVectors < 0. then
                 { R = 0.; G = 0.; B = 0. }
             else
-            Colour.scalarMultiply
-                (l.AlbedoCoefficient * Math.Max(0., angleBetweenVectors))
-                l.Colour
+            Colour.scalarMultiply l.AlbedoCoefficient l.Colour
         | Glossy s ->
-            let diffColour =
-                if angleBetweenVectors < 0. then
-                    { R = 0.; G = 0.; B = 0. }
-                else
-                Colour.scalarMultiply
-                    (s.AlbedoCoefficient * Math.Max(0., angleBetweenVectors))
-                    s.Colour
-            let h = inDirection + outDirection |> Vector.normalise
-            let nDotH = Vector.dot normal (UnitVector.toVector h)
-            if nDotH < 0. then
-                { R = 0.; G = 0.; B = 0. }
-            else
-            s.Colour
-            |> Colour.scalarMultiply s.AlbedoCoefficient
-            |> (+) diffColour
-            |> Colour.scalarMultiply (Math.Pow (nDotH, s.Exponent))
+            let nDotIn = Vector.dot normal inDirection
+            let r =
+                (Vector.scalarMultiply -1. inDirection) + (Vector.scalarMultiply (2. * nDotIn) normal)
+                |> Vector.normalise
+                |> UnitVector.toVector
+            let rDotOut = Vector.dot r outDirection
+            if rDotOut > 0. then
+                s.Colour
+                |> Colour.scalarMultiply s.AlbedoCoefficient
+                |> Colour.scalarMultiply (Math.Pow (rDotOut, s.Exponent))
+            else { R = 0.; G = 0.; B = 0. }
 
     let baseColour (s : Shader) : Colour =
         match s with
         | Diffuse l -> l.Colour
         | Glossy g -> g.Colour
+
+type Matte =
+    {
+        Diffuse : Shader
+    }
+
+type Phong =
+    {
+        Diffuse : Shader
+        Specular : Shader
+    }
+
+type Material =
+    | Matte of Matte
+    | Phong of Phong
+
+[<RequireQualifiedAccess>]
+module Material =
+    let colour
+        (contactPoint : Point)
+        (normal : UnitVector)
+        (inDirection : UnitVector)
+        (outDirection : UnitVector)
+        (l : Light)
+        (getColour : Ray -> Colour)
+        (m : Material)
+        : Colour
+        =
+        
+        match m with
+        | Matte m ->
+            let ambient = Shader.baseColour m.Diffuse * {R = 0.025; G = 0.025; B = 0.025}
+            let nDotIn = Vector.dot (UnitVector.toVector normal) (UnitVector.toVector inDirection)
+            if nDotIn < 0. then ambient
+            else
+                let col = Shader.colour contactPoint normal inDirection outDirection getColour m.Diffuse
+                (Light.luminosity l) * col + ambient
+                |> Colour.scalarMultiply nDotIn
+        | Phong p ->
+            let ambient = Shader.baseColour p.Diffuse * {R = 0.025; G = 0.025; B = 0.025}
+            let nDotIn = Vector.dot (UnitVector.toVector normal) (UnitVector.toVector inDirection)
+            if nDotIn < 0. then
+                printfn "BONK"
+                ambient
+            else
+                let diffCol = Shader.colour contactPoint normal inDirection outDirection getColour p.Diffuse
+                let specCol = Shader.colour contactPoint normal inDirection outDirection getColour p.Specular
+                (diffCol + specCol) * (Light.luminosity l)
+                |> Colour.scalarMultiply nDotIn
