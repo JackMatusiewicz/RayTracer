@@ -101,7 +101,6 @@ module Material =
             let ambient = Shader.baseColour p.Diffuse * {R = 0.025; G = 0.025; B = 0.025}
             let nDotIn = Vector.dot (UnitVector.toVector normal) (UnitVector.toVector inDirection)
             if nDotIn < 0. then
-                printfn "BONK"
                 ambient
             else
                 let diffCol = Shader.colour contactPoint normal inDirection outDirection getColour p.Diffuse
