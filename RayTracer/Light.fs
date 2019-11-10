@@ -7,36 +7,9 @@ type internal DirectionalLight =
         L : float
     }
 
-type internal PointLight =
-    {
-        Position : Point
-        Colour : Colour
-        L : float
-        Radius : float
-    }
-
 type Light =
     internal
     | Directional of DirectionalLight
-    | Point of PointLight
-
-[<RequireQualifiedAccess>]
-module PointLight =
-
-    let internal direction (hr : HitRecord) (pl : PointLight) : UnitVector =
-        pl.Position - hr.CollisionPoint
-        |> Vector.normalise
-
-    let internal luminosity (pl : PointLight) : Colour =
-        Colour.scalarMultiply pl.L pl.Colour
-
-    let make (pos : Point) (colour : Colour) (luminosity : float) (radius : float) : Light =
-        {
-            Position = pos
-            Colour = colour
-            L = luminosity
-            Radius = radius
-        } |> Point
 
 [<RequireQualifiedAccess>]
 module DirectionalLight =
@@ -54,21 +27,16 @@ module DirectionalLight =
 [<RequireQualifiedAccess>]
 module Light =
 
-    let direction (hr : HitRecord) (l : Light) : UnitVector =
+    let direction (l : Light) : UnitVector =
         match l with
         | Directional d ->
             DirectionalLight.direction d
-        | Point p ->
-            PointLight.direction hr p
 
     let luminosity (l : Light) : Colour =
         match l with
         | Directional d ->
             DirectionalLight.luminosity d
-        | Point p ->
-            PointLight.luminosity p
 
     let getPosition (l : Light) : Point option =
         match l with
         | Directional _ -> None
-        | Point p -> Some p.Position
