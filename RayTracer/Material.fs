@@ -1,6 +1,5 @@
 namespace RayTracer
 
-
 type IMaterial =
     abstract Colour
         : normal:UnitVector

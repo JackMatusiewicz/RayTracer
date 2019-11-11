@@ -1,6 +1,7 @@
 namespace RayTracer
 
 open System
+open System.Drawing
 
 [<Struct>]
 type Colour =
@@ -44,11 +45,10 @@ module Colour =
             }
         else c
 
-    let toString (c : Colour) =
-        let r,g,b =
-            let { R = r; G = g; B = b } = clampToOne c
-            r * 255., g * 255., b * 255.
-        sprintf "%d %d %d" (uint8 r) (uint8 g) (uint8 b)
+    let toColor (c : Colour) : Color =
+        let { R = r; G = g; B = b } = clampToOne c
+        (r * 255., g * 255., b * 255.)
+        |> (fun (r,g,b) -> Color.FromArgb (255,(int r),(int g),(int b)))
 
     let scalarDivide (f : float) (c : Colour) =
         {

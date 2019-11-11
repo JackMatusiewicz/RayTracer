@@ -19,7 +19,7 @@ module Lambertian =
         if angleBetweenVectors < 0. then
             { R = 0.; G = 0.; B = 0. }
         else
-        l.AlbedoCoefficient .* l.Colour
+        l.AlbedoCoefficient / Math.PI .* l.Colour
 
 type Specular =
     {
