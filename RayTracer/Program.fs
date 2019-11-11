@@ -59,7 +59,8 @@ let shapes =
                         Colour = { R = 0.5; G = 0.5; B = 0.25 }
                         AlbedoCoefficient = 0.5
                     }
-                Mirror.make diffuse specular
+                Phong.make diffuse specular
+                |> fun p -> Mirror.make p
         }
     ]
 

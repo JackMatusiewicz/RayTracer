@@ -63,11 +63,15 @@ type IMaterial =
         -> reflectionTrace:(Ray -> Colour)
         -> Colour
 
+type Matte = inherit IMaterial
+type Phong = inherit IMaterial
+type Mirror = inherit IMaterial
+
 [<RequireQualifiedAccess>]
 module Matte =
 
-    let make (lam : Lambertian) : IMaterial =
-        { new IMaterial with
+    let make (lam : Lambertian) : Matte =
+        { new Matte with
             member __.Colour normal inD _ lightLum _ _ =
                 let ambient = 0.1 .* lam.Colour
                 let nDotIn = Vector.dot (UnitVector.toVector normal) (UnitVector.toVector inD)
@@ -80,8 +84,8 @@ module Matte =
 [<RequireQualifiedAccess>]
 module Phong =
 
-    let make (lam : Lambertian) (s : Specular) : IMaterial =
-        { new IMaterial with
+    let make (lam : Lambertian) (s : Specular) : Phong =
+        { new Phong with
             member __.Colour normal inD outD lightLum _ _ =
                 let ambient = 0.1 .* lam.Colour
                 let nDotIn = Vector.dot (UnitVector.toVector normal) (UnitVector.toVector inD)
@@ -96,9 +100,8 @@ module Phong =
 [<RequireQualifiedAccess>]
 module Mirror =
 
-    let make (lam : Lambertian) (s : Specular) : IMaterial =
-        let phong = Phong.make lam s
-        { new IMaterial with
+    let make (phong : Phong) : Mirror =
+        { new Mirror with
             member __.Colour normal inD outD lightLum contactPoint reflectionTrace =
                 let underlyingColour = phong.Colour normal inD outD lightLum contactPoint reflectionTrace
                 let normal = UnitVector.toVector normal
