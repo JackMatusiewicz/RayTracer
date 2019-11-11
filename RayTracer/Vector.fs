@@ -44,16 +44,7 @@ type UnitVector = private UnitVector of Vector
 [<RequireQualifiedAccess>]
 module Vector =
 
-    let make x y z =
-        {
-            X = x; Y = y; Z = z
-        }
-
-    let add (x : Vector) (y : Vector) = x + y
-
-    let sub (rhs : Vector) (lhs : Vector) = lhs - rhs
-
-    let multiply (x : Vector) (y : Vector) = x * y
+    let make x y z = { X = x; Y = y; Z = z }
 
     let scalarMultiply (s : float) (x : Vector) = s .* x
 
@@ -85,9 +76,6 @@ module Vector =
         let len = length x
         scalarDivide len x
         |> UnitVector
-
-    let toString (v : Vector) : string =
-        sprintf "(%.3f, %.3f, %.3f)" v.X v.Y v.Z
 
 [<RequireQualifiedAccess>]
 module UnitVector =

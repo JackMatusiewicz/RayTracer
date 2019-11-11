@@ -49,23 +49,3 @@ module Colour =
         let { R = r; G = g; B = b } = clampToOne c
         (r * 255., g * 255., b * 255.)
         |> (fun (r,g,b) -> Color.FromArgb (255,(int r),(int g),(int b)))
-
-    let scalarDivide (f : float) (c : Colour) =
-        {
-            R = (float c.R) / f
-            G = (float c.G) / f
-            B = (float c.B) / f
-        }
-
-    let reduceAndAverage (cs : Colour list) : Colour =
-        let rgbStore = 0.,0.,0.
-        List.fold
-            (fun (r,g,b) c -> r + c.R, g + c.G, b + c.B)
-            rgbStore
-            cs
-        |> (fun (r,g,b) ->
-            {
-                R = r / (float cs.Length)
-                G = g / (float cs.Length)
-                B = b / (float cs.Length)
-            })
