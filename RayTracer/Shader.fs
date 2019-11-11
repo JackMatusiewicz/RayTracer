@@ -11,14 +11,7 @@ type Lambertian =
 [<RequireQualifiedAccess>]
 module Lambertian =
 
-    let colour (normal : UnitVector) (inDirection : UnitVector) (l : Lambertian) =
-        let normal = UnitVector.toVector normal
-        let inDirection = UnitVector.toVector inDirection
-        let angleBetweenVectors =
-            Vector.dot normal inDirection
-        if angleBetweenVectors < 0. then
-            { R = 0.; G = 0.; B = 0. }
-        else
+    let colour (l : Lambertian) =
         l.AlbedoCoefficient / Math.PI .* l.Colour
 
 type Specular =
