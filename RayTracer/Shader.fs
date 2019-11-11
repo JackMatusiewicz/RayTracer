@@ -105,7 +105,7 @@ module Mirror =
                 let inDirection = UnitVector.toVector inD
                 let nDotIn = Vector.dot normal inDirection
                 let r =
-                    (Vector.scalarMultiply -1. inDirection) + (Vector.scalarMultiply (2. * nDotIn) normal)
+                    (-1. .* inDirection) + (2. * nDotIn .* normal)
                     |> Vector.normalise
                 let ray = { Ray.Position = contactPoint; Direction = r }
                 Vector.dot normal inDirection .* getColour ray

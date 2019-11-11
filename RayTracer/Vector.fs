@@ -55,12 +55,7 @@ module Vector =
 
     let multiply (x : Vector) (y : Vector) = x * y
 
-    let scalarMultiply (s : float) (x : Vector) =
-        {
-            X = x.X * s
-            Y = x.Y * s
-            Z = x.Z * s
-        }
+    let scalarMultiply (s : float) (x : Vector) = s .* x
 
     let dot (x : Vector) (y : Vector) =
         x.X * y.X + x.Y * y.Y + x.Z * y.Z
