@@ -13,6 +13,7 @@
         <Compile Include="Ray.fs" />
         <Compile Include="Light.fs" />
         <Compile Include="Shader.fs" />
+        <Compile Include="Material.fs" />
         <Compile Include="Shape.fs" />
         <Compile Include="ViewPlane.fs" />
         <Compile Include="Scene.fs" />
