@@ -56,7 +56,6 @@ module Scene =
                 
             col
         
-    let toImage (scene : Scene) : unit =
+    let toImage (scene : Scene) : Colour[,] =
         Pinhole.getRays scene.Camera
         |> Array2D.map (getColourForRay scene.Objects scene.Lights)
-        |> Image.toFile "testImage"

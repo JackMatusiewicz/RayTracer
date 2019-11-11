@@ -1,4 +1,5 @@
 ﻿open RayTracer
+open System.Drawing.Imaging
 
 let shapes =
     [
@@ -85,4 +86,5 @@ let testScene () =
 [<EntryPoint>]
 let main _ =
     testScene ()
+    |> Image.toFile "testImage" ImageFormat.Png
     0
