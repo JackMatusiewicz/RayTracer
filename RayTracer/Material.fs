@@ -58,6 +58,6 @@ module Mirror =
                     (-1. .* inDirection) + (2. * nDotIn .* normal)
                     |> Vector.normalise
                 let ray = { Ray.Position = contactPoint; Direction = r }
-                Vector.dot normal inDirection .* reflectionTrace ray
+                nDotIn .* reflectionTrace ray
                 |> (+) underlyingColour
         }
