@@ -60,7 +60,7 @@ type IMaterial =
         -> outDirection:UnitVector
         -> lightLuminosity:Colour
         -> contactPoint:Point
-        -> getColour:(Ray -> Colour)
+        -> reflectionTrace:(Ray -> Colour)
         -> Colour
 
 [<RequireQualifiedAccess>]
@@ -68,7 +68,7 @@ module Matte =
 
     let make (lam : Lambertian) : IMaterial =
         { new IMaterial with
-            member __.Colour normal inD outD lightLum contactPoint getColour =
+            member __.Colour normal inD _ lightLum _ _ =
                 let ambient = 0.1 .* lam.Colour
                 let nDotIn = Vector.dot (UnitVector.toVector normal) (UnitVector.toVector inD)
                 if nDotIn < 0. then ambient
@@ -82,7 +82,7 @@ module Phong =
 
     let make (lam : Lambertian) (s : Specular) : IMaterial =
         { new IMaterial with
-            member __.Colour normal inD outD lightLum contactPoint getColour =
+            member __.Colour normal inD outD lightLum _ _ =
                 let ambient = 0.1 .* lam.Colour
                 let nDotIn = Vector.dot (UnitVector.toVector normal) (UnitVector.toVector inD)
                 if nDotIn < 0. then
@@ -99,8 +99,8 @@ module Mirror =
     let make (lam : Lambertian) (s : Specular) : IMaterial =
         let phong = Phong.make lam s
         { new IMaterial with
-            member __.Colour normal inD outD lightLum contactPoint getColour =
-                let underlyingColour = phong.Colour normal inD outD lightLum contactPoint getColour
+            member __.Colour normal inD outD lightLum contactPoint reflectionTrace =
+                let underlyingColour = phong.Colour normal inD outD lightLum contactPoint reflectionTrace
                 let normal = UnitVector.toVector normal
                 let inDirection = UnitVector.toVector inD
                 let nDotIn = Vector.dot normal inDirection
@@ -108,6 +108,6 @@ module Mirror =
                     (-1. .* inDirection) + (2. * nDotIn .* normal)
                     |> Vector.normalise
                 let ray = { Ray.Position = contactPoint; Direction = r }
-                Vector.dot normal inDirection .* getColour ray
+                Vector.dot normal inDirection .* reflectionTrace ray
                 |> (+) underlyingColour
         }
