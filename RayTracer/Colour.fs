@@ -24,6 +24,13 @@ type Colour =
             B = l.B * r.B
         }
 
+    static member (.*) (l : float, r : Colour) : Colour =
+        {
+            R = l * r.R
+            G = l * r.G
+            B = l * r.B
+        }
+
 [<RequireQualifiedAccess>]
 module Colour =
 
@@ -42,13 +49,6 @@ module Colour =
             let { R = r; G = g; B = b } = clampToOne c
             r * 255., g * 255., b * 255.
         sprintf "%d %d %d" (uint8 r) (uint8 g) (uint8 b)
-
-    let scalarMultiply (f : float) (c : Colour) =
-        {
-            R = (float c.R) * f
-            G = (float c.G) * f
-            B = (float c.B) * f
-        }
 
     let scalarDivide (f : float) (c : Colour) =
         {

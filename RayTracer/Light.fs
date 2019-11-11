@@ -18,7 +18,7 @@ module DirectionalLight =
         dl.Direction
 
     let internal luminosity (dl : DirectionalLight) : Colour =
-        Colour.scalarMultiply dl.L dl.Colour
+        dl.L .* dl.Colour
 
     let make (direction : UnitVector) (colour : Colour) (luminosity : float) : Light =
         { Direction = direction; Colour = colour; L = luminosity }
