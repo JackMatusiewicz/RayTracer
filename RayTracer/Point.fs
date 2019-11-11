@@ -15,6 +15,16 @@ type Point =
             Z = lhs.Z - rhs.Z
         }
 
+    static member (+) (lhs : Vector, rhs : Point) : Point =
+        {
+            Point.X = lhs.X + rhs.X
+            Y = lhs.Y + rhs.Y
+            Z = lhs.Z + rhs.Z
+        }
+
+    static member (+) (lhs : Point, rhs : Vector) : Point =
+        rhs + lhs
+
 [<RequireQualifiedAccess>]
 module Point =
 
@@ -23,12 +33,7 @@ module Point =
             X = x; Y = y; Z = z
         }
 
-    let add (v : Vector) (p : Point) : Point =
-        {
-            Point.X = p.X + v.X
-            Y = p.Y + v.Y
-            Z = p.Z + v.Z
-        }
+    let add (v : Vector) (p : Point) : Point = v + p
 
     let scalarAdd (v : float) (p : Point) : Point =
         {

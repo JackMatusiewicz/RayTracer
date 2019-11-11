@@ -15,5 +15,5 @@ module Ray =
         ({Position = x; Direction = UnitVector v } : Ray)
         : Point
         =
-        Point.add (Vector.scalarMultiply t v) x
+        (Vector.scalarMultiply t v) + x
 

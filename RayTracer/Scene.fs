@@ -43,14 +43,13 @@ module Scene =
                     |> List.choose id
                 match collisionPoints with
                 | [] ->
-                    Material.colour
+                    v.Material.Colour
                         v.Normal
                         dir
                         (r.Direction |> UnitVector.toVector |> Vector.scalarMultiply -1. |> Vector.normalise)
                         (Light.luminosity l)
                         v.CollisionPoint
                         (getColourForRay shapes lights)
-                        v.Material
                 | _ ->
                     { R = 0.; G = 0.; B = 0. }
                 |> fun c -> col <- col + c
@@ -60,5 +59,4 @@ module Scene =
     let toImage (scene : Scene) : unit =
         Pinhole.getRays scene.Camera
         |> Array2D.map (getColourForRay scene.Objects scene.Lights)
-        |> Ppm.toPpm
-        |> Ppm.toDisk "testImage"
+        |> Image.toFile "testImage"

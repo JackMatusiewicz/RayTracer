@@ -16,7 +16,7 @@ let shapes =
                         Colour = { R = 1.; G = 1.; B = 0.5 }
                         AlbedoCoefficient = 0.5
                     }
-                { Phong.Diffuse = diffuse; Specular = specular } |> Phong
+                Phong.make diffuse specular
         }
         {
             Shape = Sphere { Center = { X = 150.; Y = 0.; Z = -600. }; Radius = 300. }
@@ -25,7 +25,7 @@ let shapes =
                     Lambertian.Colour = { R = 0.; G = 1.; B = 0. }
                     AlbedoCoefficient = 0.5
                 }
-                |> fun s -> { Matte.Diffuse = s } |> Matte
+                |> Matte.make
         }
         {
             Shape = Sphere { Center = { X = -150.; Y = 0.; Z = 0. }; Radius = 300. }
@@ -34,7 +34,7 @@ let shapes =
                     Lambertian.Colour = { R = 0.; G = 0.; B = 1. }
                     AlbedoCoefficient = 0.5
                 }
-                |> fun s -> { Matte.Diffuse = s } |> Matte
+                |> Matte.make
         }
         {
             Shape = Sphere { Center = { X = 0.; Y = 400.; Z = 600. }; Radius = 300. }
@@ -43,7 +43,7 @@ let shapes =
                     Lambertian.Colour = { R = 0.; G = 1.; B = 1. }
                     AlbedoCoefficient = 0.5
                 }
-                |> fun s -> { Matte.Diffuse = s } |> Matte
+                |> Matte.make
         }
         {
             Shape = Plane { Point = { X = 0.; Y = -600.; Z = 0. }; Normal = Vector.normalise { Vector.X = 0.; Y = 1.; Z = 0. } }
@@ -59,7 +59,7 @@ let shapes =
                         Colour = { R = 0.5; G = 0.5; B = 0.25 }
                         AlbedoCoefficient = 0.5
                     }
-                { Mirror.Phong = { Phong.Diffuse = diffuse; Specular = specular }} |> Reflective
+                Mirror.make diffuse specular
         }
     ]
 

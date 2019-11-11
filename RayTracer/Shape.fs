@@ -7,7 +7,7 @@ type HitRecord =
         T : float
         CollisionPoint : Point
         Normal : UnitVector
-        Material : Material
+        Material : IMaterial
     }
 
 [<Struct>]
@@ -42,7 +42,7 @@ type Shape =
 type SceneObject =
     {
         Shape : Shape
-        Shader : Material
+        Shader : IMaterial
     }
 
 [<RequireQualifiedAccess>]
@@ -51,7 +51,7 @@ module internal Sphere =
     let rayIntersects
         (range : ParameterRange)
         (r : Ray)
-        (c : Material)
+        (c : IMaterial)
         (s : Sphere)
         =
         let tryCreateHitRecord v =
@@ -95,7 +95,7 @@ module internal Plane =
     let rayIntersects
         (p : Plane)
         (pr : ParameterRange)
-        (c : Material)
+        (c : IMaterial)
         (r : Ray)
         =
         let rp = { Point.X =r.Position.X; Y = r.Position.Y; Z = r.Position.Z }

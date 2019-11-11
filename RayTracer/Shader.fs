@@ -53,68 +53,64 @@ module Specular =
             |> Colour.scalarMultiply (Math.Pow (rDotOut, s.Exponent))
         else { R = 0.; G = 0.; B = 0. }    
 
-type Matte =
-    {
-        Diffuse : Lambertian
-    }
-
-type Phong =
-    {
-        Diffuse : Lambertian
-        Specular : Specular
-    }
-
-type Mirror =
-    {
-        Phong : Phong
-    }
-
-type Material =
-    | Matte of Matte
-    | Phong of Phong
-    | Reflective of Mirror
+type IMaterial =
+    abstract Colour
+        : normal:UnitVector
+        -> inDirection:UnitVector
+        -> outDirection:UnitVector
+        -> lightLuminosity:Colour
+        -> contactPoint:Point
+        -> getColour:(Ray -> Colour)
+        -> Colour
 
 [<RequireQualifiedAccess>]
-module Material =
+module Matte =
 
-    let rec colour
-        (normal : UnitVector)
-        (inDirection : UnitVector)
-        (outDirection : UnitVector)
-        (lightLuminosity : Colour)
-        (contactPoint : Point)
-        (getColour : Ray -> Colour)
-        (m : Material)
-        : Colour
-        =
-        match m with
-        | Matte m ->
-            let ambient = Colour.scalarMultiply 0.1 m.Diffuse.Colour
-            let nDotIn = Vector.dot (UnitVector.toVector normal) (UnitVector.toVector inDirection)
-            if nDotIn < 0. then ambient
-            else
-                let col = Lambertian.colour normal inDirection m.Diffuse
-                lightLuminosity * col + ambient
-                |> Colour.scalarMultiply nDotIn
-        | Phong p ->
-            let ambient = Colour.scalarMultiply 0.1 p.Diffuse.Colour
-            let nDotIn = Vector.dot (UnitVector.toVector normal) (UnitVector.toVector inDirection)
-            if nDotIn < 0. then
-                ambient
-            else
-                let diffCol = Lambertian.colour normal inDirection p.Diffuse
-                let specCol = Specular.colour normal inDirection outDirection p.Specular
-                (diffCol + specCol) * lightLuminosity
-                |> Colour.scalarMultiply nDotIn
-        | Reflective m ->
-            let underlyingColour = colour normal inDirection outDirection lightLuminosity contactPoint getColour (Phong m.Phong)
-            let normal = UnitVector.toVector normal
-            let inDirection = UnitVector.toVector inDirection
-            let nDotIn = Vector.dot normal inDirection
-            let r =
-                (Vector.scalarMultiply -1. inDirection) + (Vector.scalarMultiply (2. * nDotIn) normal)
-                |> Vector.normalise
-            let ray = { Ray.Position = contactPoint; Direction = r }
-            getColour ray
-            |> Colour.scalarMultiply (Vector.dot normal inDirection)
-            |> (+) underlyingColour
+    let make (lam : Lambertian) : IMaterial =
+        { new IMaterial with
+            member __.Colour normal inD outD lightLum contactPoint getColour =
+                let ambient = Colour.scalarMultiply 0.1 lam.Colour
+                let nDotIn = Vector.dot (UnitVector.toVector normal) (UnitVector.toVector inD)
+                if nDotIn < 0. then ambient
+                else
+                    let col = Lambertian.colour normal inD lam
+                    lightLum * col + ambient
+                    |> Colour.scalarMultiply nDotIn
+        }
+
+[<RequireQualifiedAccess>]
+module Phong =
+
+    let make (lam : Lambertian) (s : Specular) : IMaterial =
+        { new IMaterial with
+            member __.Colour normal inD outD lightLum contactPoint getColour =
+                let ambient = Colour.scalarMultiply 0.1 lam.Colour
+                let nDotIn = Vector.dot (UnitVector.toVector normal) (UnitVector.toVector inD)
+                if nDotIn < 0. then
+                    ambient
+                else
+                    let diffCol = Lambertian.colour normal inD lam
+                    let specCol = Specular.colour normal inD outD s
+                    (diffCol + specCol) * lightLum
+                    |> Colour.scalarMultiply nDotIn
+        }
+
+[<RequireQualifiedAccess>]
+module Mirror =
+
+    let make (lam : Lambertian) (s : Specular) : IMaterial =
+        let phong = Phong.make lam s
+        { new IMaterial with
+            member __.Colour normal inD outD lightLum contactPoint getColour =
+                let underlyingColour = phong.Colour normal inD outD lightLum contactPoint getColour
+                let normal = UnitVector.toVector normal
+                let inDirection = UnitVector.toVector inD
+                let nDotIn = Vector.dot normal inDirection
+                let r =
+                    (Vector.scalarMultiply -1. inDirection) + (Vector.scalarMultiply (2. * nDotIn) normal)
+                    |> Vector.normalise
+                let ray = { Ray.Position = contactPoint; Direction = r }
+                getColour ray
+                |> Colour.scalarMultiply (Vector.dot normal inDirection)
+                |> (+) underlyingColour
+        }

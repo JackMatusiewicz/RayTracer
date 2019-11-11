@@ -31,6 +31,12 @@ type Vector =
             Z = a.Z * b.Z
         }
 
+    static member (.*) (a : float, b : Vector) : Vector =
+        {
+            X = a * b.X
+            Y = a * b.Y
+            Z = a * b.Z
+        }
 
 [<Struct>]
 type UnitVector = private UnitVector of Vector
@@ -48,13 +54,6 @@ module Vector =
     let sub (rhs : Vector) (lhs : Vector) = lhs - rhs
 
     let multiply (x : Vector) (y : Vector) = x * y
-
-    let divide (denominator : Vector) (numerator : Vector) =
-        {
-            X = numerator.X / denominator.X
-            Y = numerator.Y / denominator.Y
-            Z = numerator.Z / denominator.Z
-        }
 
     let scalarMultiply (s : float) (x : Vector) =
         {
