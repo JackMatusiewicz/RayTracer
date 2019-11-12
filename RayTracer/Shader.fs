@@ -39,6 +39,8 @@ module Specular =
             (-1. .* inDirection) + (2. * nDotIn .* normal)
             |> Vector.normalise
             |> UnitVector.toVector
+        let h =
+            inDirection + outDirection |> Vector.normalise
         let rDotOut = Vector.dot r outDirection
         if rDotOut > 0. then
             s.Colour
