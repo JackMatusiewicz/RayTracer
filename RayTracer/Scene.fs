@@ -37,7 +37,7 @@ module Scene =
                     |> UnitVector.toVector
                     |> Vector.scalarMultiply -1.
                     |> Vector.normalise
-                let lightRay = { Ray.Position = v.CollisionPoint; Direction = dir }
+                let lightRay = { Ray.Origin = v.CollisionPoint; Direction = dir }
                 let collisionPoints =
                     List.map (Shape.collides { Min = 0.001 } lightRay) shapes
                     |> List.choose id

@@ -85,5 +85,5 @@ module Pinhole =
                 let x,y =
                     ViewPlane.getXY r c pinhole.ViewPlane
                 let dir = getRayDirection x y pinhole.CameraDistance pinhole.Onb
-                { Position = pinhole.CameraLocation; Direction = dir }
+                { Origin = pinhole.CameraLocation; Direction = dir }
             )

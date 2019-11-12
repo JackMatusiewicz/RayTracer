@@ -68,7 +68,7 @@ module internal Sphere =
                 } |> Some
             else None
 
-        let aV = r.Position
+        let aV = r.Origin
         let bV = UnitVector.toVector r.Direction
         let cV = s.Center
         let aMinusC = aV - cV
@@ -98,10 +98,9 @@ module internal Plane =
         (c : IMaterial)
         (r : Ray)
         =
-        let rp = { Point.X =r.Position.X; Y = r.Position.Y; Z = r.Position.Z }
         let t =
             Vector.dot
-                (p.Point - rp)
+                (p.Point - r.Origin)
                 (UnitVector.toVector p.Normal)
             |> fun v -> v / (Vector.dot (UnitVector.toVector r.Direction) (UnitVector.toVector p.Normal))
         if ParameterRange.inRange pr t then
