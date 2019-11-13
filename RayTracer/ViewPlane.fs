@@ -24,7 +24,7 @@ module ViewPlane =
                 let x,y =
                     getXY row col vp
                 {
-                    Position = { X = x; Y = y; Z = 0. }
+                    Origin = { X = x; Y = y; Z = 0. }
                     Direction = Vector.normalise {X = 0.; Y = 0.; Z = -1.}
                 }
             )
@@ -96,14 +96,15 @@ module Pinhole =
             |> Vector.normalise
         ret
 
-    let getRays (pinhole : Pinhole) : Ray[,] =
-        Array2D.init
-            pinhole.ViewPlane.VerticalResolution
-            pinhole.ViewPlane.HorizontalResolution
-            (fun r c ->
-                let r = pinhole.ViewPlane.VerticalResolution - r - 1
-                let x,y =
-                    ViewPlane.getXY r c pinhole.ViewPlane
-                let dir = getRayDirection x y pinhole
-                { Position = pinhole.CameraLocation; Direction = dir }
-            )
+    let makeRayProvider (pinhole : Pinhole) : unit -> Ray[,] =
+        fun () ->
+            Array2D.init
+                pinhole.ViewPlane.VerticalResolution
+                pinhole.ViewPlane.HorizontalResolution
+                (fun r c ->
+                    let r = pinhole.ViewPlane.VerticalResolution - r - 1
+                    let x,y =
+                        ViewPlane.getXY r c pinhole.ViewPlane
+                    let dir = getRayDirection x y pinhole
+                    { Origin = pinhole.CameraLocation; Direction = dir }
+                )

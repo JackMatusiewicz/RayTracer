@@ -11,7 +11,7 @@ type CollisionRecord =
         /// The normal of the object at the collision point
         Normal : UnitVector
         /// The colour of the object
-        Material : Colour
+        Material : Lambertian
     }
 
 module CollisionRecord =
@@ -21,7 +21,7 @@ module CollisionRecord =
         (t : float)
         (r : Ray)
         (n : UnitVector)
-        (c : Colour)
+        (c : Lambertian)
         : CollisionRecord option
         =
         if t > minT then
@@ -53,7 +53,7 @@ type Shape =
 type SceneObject =
     {
         Shape : Shape
-        Material : Colour
+        Material : Lambertian
     }
 
 [<RequireQualifiedAccess>]
@@ -61,17 +61,15 @@ module internal Sphere =
 
     let rayIntersects
         (minT : float)
-        (r : Ray)
-        (colour : Colour)
+        ({Direction = UnitVector rayDir} as r : Ray)
+        (colour : Lambertian)
         (s : Sphere)
         =
-
-        let bV = UnitVector.toVector r.Direction
-        let aMinusC = r.Position - s.Center
+        let aMinusC = r.Origin - s.Center
 
         // Calculating the terms for the quadratic equation formula
-        let a = Vector.dot bV bV
-        let b = 2. * Vector.dot aMinusC bV
+        let a = Vector.dot rayDir rayDir
+        let b = 2. * Vector.dot aMinusC rayDir
         let c = Vector.dot aMinusC aMinusC - (s.Radius * s.Radius)
         let discriminant = b * b - 4. * a * c
         if discriminant < 0. then
@@ -91,7 +89,7 @@ module internal Plane =
     let rayIntersects
         (p : Plane)
         (minT : float)
-        (c : Colour)
+        (c : Lambertian)
         (r : Ray)
         : CollisionRecord option
         =
@@ -102,7 +100,7 @@ module internal Plane =
         else
             let t =
                 // (a - o) . n / d . n
-                (Vector.dot (p.Point - r.Position) (UnitVector.toVector p.Normal)) / dDotN
+                (Vector.dot (p.Point - r.Origin) (UnitVector.toVector p.Normal)) / dDotN
             CollisionRecord.tryMake minT t r p.Normal c
 
 [<RequireQualifiedAccess>]

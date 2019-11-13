@@ -3,7 +3,7 @@ namespace RayTracer
 [<Struct>]
 type Ray =
     {
-        Position : Point
+        Origin : Point
         Direction : UnitVector
     }
 
@@ -12,7 +12,7 @@ module Ray =
 
     let getPosition
         (t : float)
-        ({Position = x; Direction = UnitVector v } : Ray)
+        ({Origin = x; Direction = UnitVector v } : Ray)
         : Point
         =
         Point.add (Vector.scalarMultiply t v) x

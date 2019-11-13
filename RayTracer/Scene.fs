@@ -74,32 +74,58 @@ module Image =
 type Scene =
     {
         Objects : SceneObject list
-        ViewPlane : ViewPlane
+        Lights : Light list
+        GetCameraRays : unit -> Ray[,]
     }
 
 
 [<RequireQualifiedAccess>]
 module Scene =
+    
+    let private findClosestCollision (shapes : SceneObject list) (ray : Ray) : CollisionRecord option =
+        List.map (Shape.collides 0.001 ray) shapes
+        |> List.choose id
+        |> function
+            | [] -> None
+            | cs ->
+                List.sortBy (fun c -> c.T) cs
+                |> List.head
+                |> Some
 
+    let private shadeAtCollision
+        (sceneObjects : SceneObject list)
+        (cr : CollisionRecord)
+        (l : Light)
+        : Colour
+        =
+        let dir =
+            Light.direction l
+            |> UnitVector.toVector
+            |> Vector.scalarMultiply -1.
+            |> Vector.normalise
+        let lightRay = { Origin = cr.CollisionPoint; Direction = dir }
+
+        match findClosestCollision sceneObjects lightRay with
+        | None -> Lambertian.colour cr.Normal dir cr.Material
+        | Some _ ->  { R = 0.; G = 0.; B = 0. }
+        |> (+) (0.1 .* cr.Material.Colour) //Ambient colour
+            
+        
     let rec private getColourForRay
         (shapes : SceneObject list)
+        (lights : Light list)
         (r : Ray)
         : Colour
         =
-        let collisionPoints =
-            List.map (Shape.collides 0. r) shapes
-            |> List.choose id
-        match collisionPoints with
-        | [] ->
-            { R = 0.; G = 0.; B = 0. }
-        | vs ->
-            let v =
-                List.sortBy (fun hr -> hr.T) vs
-                |> List.head
-            v.Material
+        findClosestCollision shapes r
+        |> Option.map
+            (fun collision ->
+                List.map (shadeAtCollision shapes collision) lights
+                |> List.fold (+) { R = 0.; G = 0.; B = 0.})
+        |> Option.defaultValue { R = 0.; G = 0.; B = 0. }
         
     let toImage (scene : Scene) : unit =
-        ViewPlane.getRays scene.ViewPlane
-        |> Array2D.map (getColourForRay scene.Objects)
+        scene.GetCameraRays ()
+        |> Array2D.map (getColourForRay scene.Objects scene.Lights)
         |> Ppm.toPpm
         |> Ppm.toDisk "simpleImage"

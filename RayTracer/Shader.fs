@@ -2,12 +2,6 @@ namespace RayTracer
 
 open System
 
-type Lambertian =
-    {
-        Colour : Colour
-        AlbedoCoefficient : float
-    }
-
 type Specular =
     {
         Colour : Colour
@@ -15,7 +9,12 @@ type Specular =
         Exponent : float
     }
 
-[<RequireQualifiedAccess>]
+type Lambertian =
+    {
+        Colour : Colour
+        AlbedoCoefficient : float
+    }
+
 module Lambertian =
 
     let colour (normal : UnitVector) (inDirection : UnitVector) (l : Lambertian) =
@@ -23,10 +22,11 @@ module Lambertian =
         let inDirection = UnitVector.toVector inDirection
         let angleBetweenVectors =
             Vector.dot normal inDirection
+
         if angleBetweenVectors < 0. then
             { R = 0.; G = 0.; B = 0. }
         else
-        Colour.scalarMultiply l.AlbedoCoefficient l.Colour
+        (l.AlbedoCoefficient * angleBetweenVectors .* l.Colour)
 
 [<RequireQualifiedAccess>]
 module Specular =
@@ -114,7 +114,7 @@ module Material =
             let r =
                 (Vector.scalarMultiply -1. inDirection) + (Vector.scalarMultiply (2. * nDotIn) normal)
                 |> Vector.normalise
-            let ray = { Ray.Position = contactPoint; Direction = r }
+            let ray = { Ray.Origin = contactPoint; Direction = r }
             getColour ray
             |> Colour.scalarMultiply (Vector.dot normal inDirection)
             |> (+) underlyingColour

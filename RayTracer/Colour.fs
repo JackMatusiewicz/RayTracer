@@ -24,6 +24,9 @@ type Colour =
             B = l.B * r.B
         }
 
+    static member (.*) (l : float, r : Colour) : Colour =
+        { R = l * r.R; G = l * r.G; B = l * r.B }
+
 [<RequireQualifiedAccess>]
 module Colour =
 
