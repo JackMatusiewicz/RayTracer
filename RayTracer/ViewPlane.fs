@@ -10,13 +10,6 @@ type ViewPlane =
         PixelSize : float
     }
 
-type OrthonormalBasis =
-    {
-        U : UnitVector
-        V : UnitVector
-        W : UnitVector
-    }
-
 [<RequireQualifiedAccess>]
 module ViewPlane =
 
@@ -25,11 +18,17 @@ module ViewPlane =
         let y = vp.PixelSize * ((float row) - 0.5 * (float vp.VerticalResolution) + 0.5)
         x,y
 
+type OrthonormalBasis =
+    {
+        U : UnitVector
+        V : UnitVector
+        W : UnitVector
+    }
+
 type Pinhole =
     internal {
         ViewPlane : ViewPlane
         CameraLocation : Point
-        ViewDirection : UnitVector
         CameraDistance : float
         Up : UnitVector
         Onb : OrthonormalBasis
@@ -39,14 +38,10 @@ type Pinhole =
 module Pinhole =
 
     let private makeOnb (up : UnitVector) (direction : UnitVector) =
-        let w =
-            UnitVector.toVector direction
-            |> Vector.scalarMultiply -1.
-            
-        let u =
-            UnitVector.toVector up
-            |> fun up -> Vector.cross up w
+        let w = -1. .* UnitVector.toVector direction    
+        let u = Vector.cross (UnitVector.toVector up) w
         let v = Vector.cross w u
+
         {
             U = Vector.normalise u
             V = Vector.normalise v
@@ -64,7 +59,6 @@ module Pinhole =
         {
             ViewPlane = vp
             CameraLocation = location
-            ViewDirection = direction
             Up = up
             CameraDistance = distance
             Onb = makeOnb up direction

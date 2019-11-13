@@ -12,25 +12,13 @@ type Colour =
     } with
 
     static member (+) (l : Colour, r : Colour) : Colour =
-        {
-            R = l.R + r.R
-            G = l.G + r.G
-            B = l.B + r.B
-        }
+        { R = l.R + r.R; G = l.G + r.G; B = l.B + r.B }
 
     static member (*) (l : Colour, r : Colour) : Colour =
-        {
-            R = l.R * r.R
-            G = l.G * r.G
-            B = l.B * r.B
-        }
+        { R = l.R * r.R; G = l.G * r.G; B = l.B * r.B }
 
     static member (.*) (l : float, r : Colour) : Colour =
-        {
-            R = l * r.R
-            G = l * r.G
-            B = l * r.B
-        }
+        { R = l * r.R; G = l * r.G; B = l * r.B }
 
 [<RequireQualifiedAccess>]
 module Colour =
@@ -48,4 +36,4 @@ module Colour =
     let toColor (c : Colour) : Color =
         let { R = r; G = g; B = b } = clampToOne c
         (r * 255., g * 255., b * 255.)
-        |> (fun (r,g,b) -> Color.FromArgb (255,(int r),(int g),(int b)))
+        |> (fun (r,g,b) -> Color.FromArgb (255, (int r), (int g), (int b)))

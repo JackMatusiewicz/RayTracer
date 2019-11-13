@@ -29,6 +29,7 @@ type Sphere =
         Radius : float
     }
 
+[<Struct>]
 type Plane =
     internal {
         Point : Point
@@ -51,7 +52,7 @@ module internal Sphere =
     let rayIntersects
         (range : ParameterRange)
         (r : Ray)
-        (c : IMaterial)
+        colour
         (s : Sphere)
         =
         let tryCreateHitRecord v =
@@ -64,7 +65,7 @@ module internal Sphere =
                         p - s.Center
                         |> Vector.scalarDivide s.Radius
                         |> Vector.normalise
-                    Material = c
+                    Material = colour
                 } |> Some
             else None
 
@@ -74,12 +75,8 @@ module internal Sphere =
         let aMinusC = aV - cV
 
         let a = Vector.dot bV bV
-        let b =
-            Vector.dot aMinusC bV
-            |> fun v -> v * 2.
-        let c =
-            Vector.dot aMinusC aMinusC
-            |> fun v -> v - (s.Radius * s.Radius)
+        let b = 2. * Vector.dot aMinusC bV
+        let c = Vector.dot aMinusC aMinusC - (s.Radius* s.Radius)
         let discriminant = b * b - 4. * a * c
         if discriminant < 0. then
             None
@@ -95,21 +92,21 @@ module internal Plane =
     let rayIntersects
         (p : Plane)
         (pr : ParameterRange)
-        (c : IMaterial)
+        colour
         (r : Ray)
         =
+        let rayDirection = UnitVector.toVector r.Direction
+        let (UnitVector normal) = p.Normal
         let t =
-            Vector.dot
-                (p.Point - r.Origin)
-                (UnitVector.toVector p.Normal)
-            |> fun v -> v / (Vector.dot (UnitVector.toVector r.Direction) (UnitVector.toVector p.Normal))
+            Vector.dot (p.Point - r.Origin) (UnitVector.toVector p.Normal)
+            |> fun v -> v / (Vector.dot rayDirection normal)
         if ParameterRange.inRange pr t then
             let pt = Ray.getPosition t r
             {
                 T = t
                 CollisionPoint = pt
                 Normal = p.Normal
-                Material = c
+                Material = colour
             } |> Some
         else None
 
