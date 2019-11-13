@@ -1,5 +1,6 @@
 namespace RayTracer
 
+(*
 type Scene =
     {
         Camera : Pinhole
@@ -17,7 +18,7 @@ module Scene =
         : Colour
         =
         let collisionPoints =
-            List.map (Shape.collides { Min = 0.001 } r) shapes
+            List.map (Shape.collides 0.001 r) shapes
             |> List.choose id
         match collisionPoints with
         | [] ->
@@ -39,7 +40,7 @@ module Scene =
                     |> Vector.normalise
                 let lightRay = { Ray.Position = v.CollisionPoint; Direction = dir }
                 let collisionPoints =
-                    List.map (Shape.collides { Min = 0.001 } lightRay) shapes
+                    List.map (Shape.collides 0.001 lightRay) shapes
                     |> List.choose id
                 match collisionPoints with
                 | [] ->
@@ -62,3 +63,43 @@ module Scene =
         |> Array2D.map (getColourForRay scene.Objects scene.Lights)
         |> Ppm.toPpm
         |> Ppm.toDisk "testImage"
+
+*)
+module Image =
+    let save (s : string) (_ : Colour[,]) = ()
+
+
+
+
+type Scene =
+    {
+        Objects : SceneObject list
+        ViewPlane : ViewPlane
+    }
+
+
+[<RequireQualifiedAccess>]
+module Scene =
+
+    let rec private getColourForRay
+        (shapes : SceneObject list)
+        (r : Ray)
+        : Colour
+        =
+        let collisionPoints =
+            List.map (Shape.collides 0. r) shapes
+            |> List.choose id
+        match collisionPoints with
+        | [] ->
+            { R = 0.; G = 0.; B = 0. }
+        | vs ->
+            let v =
+                List.sortBy (fun hr -> hr.T) vs
+                |> List.head
+            v.Material
+        
+    let toImage (scene : Scene) : unit =
+        ViewPlane.getRays scene.ViewPlane
+        |> Array2D.map (getColourForRay scene.Objects)
+        |> Ppm.toPpm
+        |> Ppm.toDisk "simpleImage"

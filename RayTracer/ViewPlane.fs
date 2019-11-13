@@ -1,14 +1,33 @@
 namespace RayTracer
 
-open System
-
 [<Struct>]
 type ViewPlane =
     {
         HorizontalResolution : int
         VerticalResolution : int
-        PixelSize : float
     }
+
+[<RequireQualifiedAccess>]
+module ViewPlane =
+
+    let getXY (row : int) (col : int) (vp : ViewPlane) : float * float =
+        let x = ((float col) - 0.5 * (float vp.HorizontalResolution) + 0.5)
+        let y = ((float row) - 0.5 * (float vp.VerticalResolution) + 0.5)
+        x,y
+
+    let getRays (vp : ViewPlane) : Ray[,] =
+        Array2D.init
+            vp.VerticalResolution
+            vp.HorizontalResolution
+            (fun row col ->
+                let row = vp.VerticalResolution - row - 1
+                let x,y =
+                    getXY row col vp
+                {
+                    Position = { X = x; Y = y; Z = 0. }
+                    Direction = Vector.normalise {X = 0.; Y = 0.; Z = -1.}
+                }
+            )
 
 type OrthonormalBasis =
     {
@@ -16,14 +35,6 @@ type OrthonormalBasis =
         V : UnitVector
         W : UnitVector
     }
-
-[<RequireQualifiedAccess>]
-module ViewPlane =
-
-    let getXY (row : int) (col : int) (vp : ViewPlane) : float * float =
-        let x = vp.PixelSize * ((float col) - 0.5 * (float vp.HorizontalResolution) + 0.5)
-        let y = vp.PixelSize * ((float row) - 0.5 * (float vp.VerticalResolution) + 0.5)
-        x,y
 
 type Pinhole =
     internal {

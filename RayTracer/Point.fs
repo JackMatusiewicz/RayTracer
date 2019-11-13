@@ -15,6 +15,14 @@ type Point =
             Z = lhs.Z - rhs.Z
         }
 
+    static member (+) (lhs : Vector, rhs : Point) : Point =
+        { X = lhs.X + rhs.X; Y = lhs.Y + rhs.Y; Z = lhs.Z + rhs.Z }
+
+    static member (+) (point : Point, vector : Vector) : Point = vector + point
+
+    override this.ToString () =
+        sprintf "%.3f, %.3f, %.3f" this.X this.Y this.Z
+
 [<RequireQualifiedAccess>]
 module Point =
 

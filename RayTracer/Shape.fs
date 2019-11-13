@@ -2,35 +2,46 @@ namespace RayTracer
 open System
 
 [<Struct>]
-type HitRecord =
+type CollisionRecord =
     {
+        /// The parameter to plug into the ray calculation
         T : float
+        /// The collision point on the surface of the object
         CollisionPoint : Point
+        /// The normal of the object at the collision point
         Normal : UnitVector
-        Material : Material
+        /// The colour of the object
+        Material : Colour
     }
 
-[<Struct>]
-type ParameterRange =
-    {
-        Min : float
-    }
+module CollisionRecord =
 
-[<RequireQualifiedAccess>]
-module ParameterRange =
-
-    let inRange (pr : ParameterRange) (v : float) =
-        v >= pr.Min
+    let tryMake
+        (minT : float)
+        (t : float)
+        (r : Ray)
+        (n : UnitVector)
+        (c : Colour)
+        : CollisionRecord option
+        =
+        if t > minT then
+            {
+                T = t
+                CollisionPoint = Ray.getPosition t r
+                Normal = n
+                Material = c
+            } |> Some
+        else None
 
 [<Struct>]
 type Sphere =
-    internal {
+    {
         Center : Point
         Radius : float
     }
 
 type Plane =
-    internal {
+    {
         Point : Point
         Normal : UnitVector
     }
@@ -42,84 +53,64 @@ type Shape =
 type SceneObject =
     {
         Shape : Shape
-        Shader : Material
+        Material : Colour
     }
 
 [<RequireQualifiedAccess>]
 module internal Sphere =
 
     let rayIntersects
-        (range : ParameterRange)
+        (minT : float)
         (r : Ray)
-        (c : Material)
+        (colour : Colour)
         (s : Sphere)
         =
-        let tryCreateHitRecord v =
-            if ParameterRange.inRange range v then
-                let p = Ray.getPosition v r
-                {
-                    T = v
-                    CollisionPoint = p
-                    Normal =
-                        p - s.Center
-                        |> Vector.scalarDivide s.Radius
-                        |> Vector.normalise
-                    Material = c
-                } |> Some
-            else None
 
-        let aV = r.Position
         let bV = UnitVector.toVector r.Direction
-        let cV = s.Center
-        let aMinusC = aV - cV
+        let aMinusC = r.Position - s.Center
 
+        // Calculating the terms for the quadratic equation formula
         let a = Vector.dot bV bV
-        let b =
-            Vector.dot aMinusC bV
-            |> fun v -> v * 2.
-        let c =
-            Vector.dot aMinusC aMinusC
-            |> fun v -> v - (s.Radius * s.Radius)
+        let b = 2. * Vector.dot aMinusC bV
+        let c = Vector.dot aMinusC aMinusC - (s.Radius * s.Radius)
         let discriminant = b * b - 4. * a * c
         if discriminant < 0. then
             None
         else
-            let v = (-b - Math.Sqrt discriminant) / (2. * a)
-            let v' = (-b + Math.Sqrt discriminant) / (2. * a)
-            tryCreateHitRecord v
-            |> Option.orElse (tryCreateHitRecord v')
+            let firstT = (-b - Math.Sqrt discriminant) / (2. * a)
+            let secondT = (-b + Math.Sqrt discriminant) / (2. * a)
+            let firstNormal = (Ray.getPosition firstT r) - s.Center |> Vector.normalise
+            let secondNormal = (Ray.getPosition secondT r) - s.Center |> Vector.normalise
+
+            CollisionRecord.tryMake minT firstT r firstNormal colour
+            |> Option.orElse (CollisionRecord.tryMake minT secondT r secondNormal colour)
 
 [<RequireQualifiedAccess>]
 module internal Plane =
 
     let rayIntersects
         (p : Plane)
-        (pr : ParameterRange)
-        (c : Material)
+        (minT : float)
+        (c : Colour)
         (r : Ray)
+        : CollisionRecord option
         =
-        let rp = { Point.X =r.Position.X; Y = r.Position.Y; Z = r.Position.Z }
-        let t =
-            Vector.dot
-                (p.Point - rp)
-                (UnitVector.toVector p.Normal)
-            |> fun v -> v / (Vector.dot (UnitVector.toVector r.Direction) (UnitVector.toVector p.Normal))
-        if ParameterRange.inRange pr t then
-            let pt = Ray.getPosition t r
-            {
-                T = t
-                CollisionPoint = pt
-                Normal = p.Normal
-                Material = c
-            } |> Some
-        else None
+        let dDotN = (Vector.dot (UnitVector.toVector r.Direction) (UnitVector.toVector p.Normal))
+        // If the ray is parallel to the plane, we definitely won't intersect.
+        if dDotN = 0. then
+            None
+        else
+            let t =
+                // (a - o) . n / d . n
+                (Vector.dot (p.Point - r.Position) (UnitVector.toVector p.Normal)) / dDotN
+            CollisionRecord.tryMake minT t r p.Normal c
 
 [<RequireQualifiedAccess>]
 module Shape =
 
-    let collides (pr : ParameterRange) (r : Ray) (s : SceneObject) =
+    let collides (minT : float) (r : Ray) (s : SceneObject) =
         match s.Shape with
         | Sphere sp ->
-            Sphere.rayIntersects pr r s.Shader sp
+            Sphere.rayIntersects minT r s.Material sp
         | Plane p ->
-            Plane.rayIntersects p pr s.Shader r
+            Plane.rayIntersects p minT s.Material r
