@@ -56,5 +56,5 @@ module Scene =
                 |> List.reduce (+)
         
     let toImage (scene : Scene) : Colour[,] =
-        Pinhole.getRays scene.Camera
+        Pinhole.getRays scene.Camera ()
         |> Array2D.map (getColourForRay scene.Objects scene.Lights)

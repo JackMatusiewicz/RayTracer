@@ -18,12 +18,21 @@ module ViewPlane =
         let y = vp.PixelSize * ((float row) - 0.5 * (float vp.VerticalResolution) + 0.5)
         x,y
 
-type OrthonormalBasis =
+type internal OrthonormalBasis =
     {
         U : UnitVector
         V : UnitVector
         W : UnitVector
     }
+
+module internal OrthonormalBasis =
+
+    let make
+        (UnitVector up : UnitVector)
+        ((UnitVector w) as wUnitVector : UnitVector) =
+        let u = Vector.cross up w
+        let v = Vector.cross w u
+        { U = Vector.normalise u; V = Vector.normalise v; W = wUnitVector }
 
 type Pinhole =
     internal {
@@ -37,23 +46,8 @@ type Pinhole =
 [<RequireQualifiedAccess>]
 module Pinhole =
 
-    let private makeOnb (up : UnitVector) (direction : UnitVector) =
-        let w = -1. .* UnitVector.toVector direction    
-        let u = Vector.cross (UnitVector.toVector up) w
-        let v = Vector.cross w u
-
-        {
-            U = Vector.normalise u
-            V = Vector.normalise v
-            W = Vector.normalise w
-        }
-
-    let make
-        (vp : ViewPlane)
-        (location : Point)
-        (distance :float)
-        (up : UnitVector)
-        (direction : UnitVector)
+    let make (vp : ViewPlane) (location : Point) (distance : float) (up : UnitVector)
+        ((UnitVector direction) : UnitVector)
         : Pinhole
         =
         {
@@ -61,23 +55,27 @@ module Pinhole =
             CameraLocation = location
             Up = up
             CameraDistance = distance
-            Onb = makeOnb up direction
+            Onb =
+                OrthonormalBasis.make
+                    up
+                    (-1. .* direction |> Vector.normalise)
         }
 
-    let private getRayDirection x y z (onb : OrthonormalBasis) =
+    let private convertToWorldCoordinates x y z (onb : OrthonormalBasis) =
         let u = x .* UnitVector.toVector onb.U
         let v = y .* UnitVector.toVector onb.V
         let w = z .* UnitVector.toVector onb.W
         Vector.normalise (u + v - w)
 
-    let getRays (pinhole : Pinhole) : Ray[,] =
-        Array2D.init
-            pinhole.ViewPlane.VerticalResolution
-            pinhole.ViewPlane.HorizontalResolution
-            (fun r c ->
-                let r = pinhole.ViewPlane.VerticalResolution - r - 1
-                let x,y =
-                    ViewPlane.getXY r c pinhole.ViewPlane
-                let dir = getRayDirection x y pinhole.CameraDistance pinhole.Onb
-                { Origin = pinhole.CameraLocation; Direction = dir }
-            )
+    let getRays (pinhole : Pinhole) : unit -> Ray[,] =
+        fun () ->
+            Array2D.init
+                pinhole.ViewPlane.VerticalResolution
+                pinhole.ViewPlane.HorizontalResolution
+                (fun r c ->
+                    let r = pinhole.ViewPlane.VerticalResolution - r - 1
+                    let x,y =
+                        ViewPlane.getXY r c pinhole.ViewPlane
+                    let dir = convertToWorldCoordinates x y pinhole.CameraDistance pinhole.Onb
+                    { Origin = pinhole.CameraLocation; Direction = dir }
+                )
