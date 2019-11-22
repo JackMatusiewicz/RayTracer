@@ -79,8 +79,8 @@ let testScene () =
             ({ Vector.X = 0.; Y = 0.; Z = 600. } |> Vector.normalise)
 
     let l = DirectionalLight.make (Vector.normalise { X = 0.; Y = -1.; Z = 1.; }) { R = 1.; G = 1.; B = 1. } 2.5
-        
-    {Camera = pinhole; Objects = shapes; Lights = [l]}
+
+    {GetCameraRays = Pinhole.makeRayProvider pinhole; Objects = shapes; Lights = [l]}
     |> Scene.toImage
 
 [<EntryPoint>]
