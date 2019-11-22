@@ -74,14 +74,15 @@ module Pinhole =
         let w = z .* UnitVector.toVector onb.W
         Vector.normalise (u + v - w)
 
-    let getRays (pinhole : Pinhole) : Ray[,] =
-        Array2D.init
-            pinhole.ViewPlane.VerticalResolution
-            pinhole.ViewPlane.HorizontalResolution
-            (fun r c ->
-                let r = pinhole.ViewPlane.VerticalResolution - r - 1
-                let x,y =
-                    ViewPlane.getXY r c pinhole.ViewPlane
-                let dir = getRayDirection x y pinhole.CameraDistance pinhole.Onb
-                { Origin = pinhole.CameraLocation; Direction = dir }
-            )
+    let makeRayProvider (pinhole : Pinhole) : unit -> Ray[,] =
+        fun () ->
+            Array2D.init
+                pinhole.ViewPlane.VerticalResolution
+                pinhole.ViewPlane.HorizontalResolution
+                (fun r c ->
+                    let r = pinhole.ViewPlane.VerticalResolution - r - 1
+                    let x,y =
+                        ViewPlane.getXY r c pinhole.ViewPlane
+                    let dir = getRayDirection x y pinhole.CameraDistance pinhole.Onb
+                    { Origin = pinhole.CameraLocation; Direction = dir }
+                )

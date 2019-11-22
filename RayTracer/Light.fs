@@ -1,10 +1,10 @@
 namespace RayTracer
 
-type internal DirectionalLight =
-    {
+type DirectionalLight =
+    internal {
         Direction : UnitVector
         Colour : Colour
-        L : float
+        Luminosity : float
     }
 
 type Light =
@@ -18,10 +18,10 @@ module DirectionalLight =
         dl.Direction
 
     let internal luminosity (dl : DirectionalLight) : Colour =
-        dl.L .* dl.Colour
+        dl.Luminosity .* dl.Colour
 
     let make (direction : UnitVector) (colour : Colour) (luminosity : float) : Light =
-        { Direction = direction; Colour = colour; L = luminosity }
+        { Direction = direction; Colour = colour; Luminosity = luminosity }
         |> Directional
 
 [<RequireQualifiedAccess>]

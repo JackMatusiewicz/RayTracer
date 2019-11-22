@@ -24,7 +24,7 @@ module Matte =
                 let nDotIn = Vector.dot (UnitVector.toVector normal) (UnitVector.toVector inD)
                 if nDotIn < 0. then ambient
                 else
-                    let col = Lambertian.colour lam
+                    let col = Lambertian.colour normal inD lam
                     nDotIn .* (lightLum * col + ambient)
         }
 
@@ -39,7 +39,7 @@ module Phong =
                 if nDotIn < 0. then
                     ambient
                 else
-                    let diffCol = Lambertian.colour lam
+                    let diffCol = Lambertian.colour normal inD lam
                     let specCol = Specular.colour normal inD outD s
                     nDotIn .* (diffCol + specCol) * lightLum
         }
