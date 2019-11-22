@@ -31,7 +31,6 @@ type Pinhole =
         CameraLocation : Point
         ViewDirection : UnitVector
         CameraDistance : float
-        Up : UnitVector
         Onb : OrthonormalBasis
     }
 
@@ -65,7 +64,6 @@ module Pinhole =
             ViewPlane = vp
             CameraLocation = location
             ViewDirection = direction
-            Up = up
             CameraDistance = distance
             Onb = makeOnb up direction
         }
